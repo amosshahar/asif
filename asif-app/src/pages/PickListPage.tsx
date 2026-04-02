@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import type { Order, OrderItem } from '../api'
 import { updateItem, completeOrder } from '../api'
+import { scanBarcode } from '../scanner'
 import MissingModal from '../components/MissingModal'
+import MismatchModal from '../components/MismatchModal'
 import s from './PickListPage.module.css'
 
 interface Props {
@@ -23,15 +25,37 @@ function groupByAisle(items: OrderItem[]): GroupedItems {
 }
 
 export default function PickListPage({ order, onOrderComplete, onBack }: Props) {
-  const [items, setItems]           = useState<OrderItem[]>(order.items)
+  const [items, setItems]             = useState<OrderItem[]>(order.items)
   const [missingItem, setMissingItem] = useState<OrderItem | null>(null)
-  const [completing, setCompleting] = useState(false)
+  const [mismatch, setMismatch]       = useState<{ item: OrderItem; scanned: string } | null>(null)
+  const [scanning, setScanning]       = useState<string | null>(null) // itemId being scanned
+  const [completing, setCompleting]   = useState(false)
 
   const collected = items.filter(i => i.status !== 'pending').length
   const total     = items.length
   const allDone   = collected === total
 
   const groups = groupByAisle(items)
+
+  async function handleScan(item: OrderItem) {
+    setScanning(item.id)
+    try {
+      const scanned = await scanBarcode()
+      if (!scanned) return                          // user cancelled
+      if (!item.barcode || scanned === item.barcode) {
+        await markCollected(item, 'scan')           // match (or no barcode on file)
+      } else {
+        setMismatch({ item, scanned })              // mismatch → show modal
+      }
+    } finally {
+      setScanning(null)
+    }
+  }
+
+  async function handleForceConfirm(item: OrderItem) {
+    setMismatch(null)
+    await markCollected(item, 'scan')
+  }
 
   async function markCollected(item: OrderItem, method: 'scan' | 'manual') {
     const updated = await updateItem(order.id, item.id, {
@@ -98,6 +122,8 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
               <ItemCard
                 key={item.id}
                 item={item}
+                scanning={scanning === item.id}
+                onScan={() => handleScan(item)}
                 onCollect={() => markCollected(item, 'manual')}
                 onMissing={() => setMissingItem(item)}
                 onUndo={() => undoItem(item)}
@@ -122,6 +148,17 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
           onClose={() => setMissingItem(null)}
         />
       )}
+
+      {mismatch && (
+        <MismatchModal
+          itemName={mismatch.item.name}
+          scanned={mismatch.scanned}
+          expected={mismatch.item.barcode}
+          onForceConfirm={() => handleForceConfirm(mismatch.item)}
+          onRetry={() => { setMismatch(null); handleScan(mismatch.item) }}
+          onClose={() => setMismatch(null)}
+        />
+      )}
     </div>
   )
 }
@@ -130,12 +167,14 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
 
 interface CardProps {
   item: OrderItem
+  scanning: boolean
+  onScan: () => void
   onCollect: () => void
   onMissing: () => void
   onUndo: () => void
 }
 
-function ItemCard({ item, onCollect, onMissing, onUndo }: CardProps) {
+function ItemCard({ item, scanning, onScan, onCollect, onMissing, onUndo }: CardProps) {
   const isWeighed   = item.unit !== 'piece'
   const isDone      = item.status !== 'pending'
   const isMissing   = item.status === 'missing'
@@ -168,6 +207,11 @@ function ItemCard({ item, onCollect, onMissing, onUndo }: CardProps) {
       {!isDone && (
         <div className={s.cardActions}>
           <button className={s.missingBtn} onClick={onMissing}>חסר</button>
+          {item.barcode && (
+            <button className={s.scanBtn} onClick={onScan} disabled={scanning}>
+              {scanning ? '...' : '📷 סרוק'}
+            </button>
+          )}
           <button className={s.collectBtn} onClick={onCollect}>
             {isWeighed ? 'שקל ואשר' : 'אסוף'}
           </button>

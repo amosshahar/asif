@@ -173,6 +173,22 @@
   gap: 8px;
 }
 
+.scanBtn {
+  flex: 1.5;
+  padding: 11px;
+  background: transparent;
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.scanBtn:active { background: #eff6ff; }
+.scanBtn:disabled { opacity: 0.5; }
+
 .missingBtn {
   flex: 1;
   padding: 11px;
