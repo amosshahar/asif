@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Capacitor
+asif-app/ios/
+asif-app/android/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Generated files
+*.pdf
+*.html
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
