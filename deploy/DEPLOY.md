@@ -3,8 +3,8 @@
 ## Architecture
 
 ```
-iPhone App  ──HTTPS──▶  api.asif.tulidu.com (CloudFront) ──HTTP:3002──▶  EC2 (PM2 asif-server)
-Browser     ──HTTPS──▶  asif.tulidu.com     (CloudFront) ──────────────▶  S3 (asif-admin-frontend)
+iPhone App  ──HTTPS──▶  asif-api.tulidu.com (CloudFront EL5YSKDH45CFX) ──HTTP:3002──▶  EC2 (PM2 asif-server)
+Browser     ──HTTPS──▶  asif.tulidu.com     (CloudFront E1KCKLWQAC76IU) ────────────▶  S3 (asif-admin-frontend)
 ```
 
 **Reused from tulidu-sport:**

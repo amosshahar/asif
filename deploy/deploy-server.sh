@@ -29,7 +29,8 @@ rsync -avz --delete \
 
 echo "▶ Uploading data files (first deploy only — skip if already exist)..."
 ssh -i "$SSH_KEY" "$EC2_USER@$EC2_HOST" "mkdir -p $TARGET/data"
-scp -i "$SSH_KEY" data/users.json "$EC2_USER@$EC2_HOST:$TARGET/data/users.json" 2>/dev/null || echo "  (skipped — data already exists)"
+scp -i "$SSH_KEY" data/users.json  "$EC2_USER@$EC2_HOST:$TARGET/data/users.json"  2>/dev/null || echo "  (users.json skipped)"
+scp -i "$SSH_KEY" data/orders.json "$EC2_USER@$EC2_HOST:$TARGET/data/orders.json" 2>/dev/null || echo "  (orders.json skipped)"
 
 echo "▶ Installing dependencies and restarting PM2..."
 ssh -i "$SSH_KEY" "$EC2_USER@$EC2_HOST" "
