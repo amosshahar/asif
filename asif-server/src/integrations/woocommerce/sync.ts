@@ -5,7 +5,7 @@ import type { WooCommerceConfig } from './config'
 import { mapWcOrderToOrder } from './mapWcOrder'
 
 function hasPickProgress(o: Order): boolean {
-  if (o.status === 'in_progress') return true
+  if (o.status === 'in_progress' || o.status === 'waiting_cs') return true
   return o.items.some(i => i.status !== 'pending')
 }
 
@@ -29,6 +29,11 @@ export async function upsertWcOrderMapped(
       wcStatus: mapped.wcStatus,
       customerName: mapped.customerName,
       syncedAt: mapped.syncedAt,
+      distributionArea: mapped.distributionArea ?? existing.distributionArea,
+      deliveryDate: mapped.deliveryDate ?? existing.deliveryDate,
+      deliveryTimeFrom: mapped.deliveryTimeFrom ?? existing.deliveryTimeFrom,
+      deliveryTimeTo: mapped.deliveryTimeTo ?? existing.deliveryTimeTo,
+      customerNote: mapped.customerNote ?? existing.customerNote,
     })
     return 'meta-only'
   }
@@ -36,9 +41,16 @@ export async function upsertWcOrderMapped(
   await persistence.put({
     ...mapped,
     assignedTo: existing.assignedTo,
-    status: existing.status === 'assigned' ? 'assigned' : mapped.status,
+    status:
+      existing.status === 'assigned' ||
+      existing.status === 'in_progress' ||
+      existing.status === 'waiting_cs'
+        ? existing.status
+        : mapped.status,
     startedAt: existing.startedAt,
     completedAt: existing.completedAt,
+    csHandoffReason: existing.csHandoffReason,
+    customerNote: mapped.customerNote ?? existing.customerNote,
   })
   return 'replaced'
 }

@@ -2,7 +2,10 @@ import { Router, Request, Response } from 'express'
 import { readUsers, findUser, saveUser, deleteUserById } from '../users'
 import { User, type Role } from '../types'
 import { readOrders, findOrder, saveOrder } from '../orders'
+import { computeCollectorStats, parseStatsRange } from '../collectorStats'
 import type { AdminAuthedRequest } from '../middleware/adminAuth'
+import { loadWooCommerceConfig } from '../integrations/woocommerce/config'
+import { kickWooCommerceFullSyncInBackground } from '../wcFullSync'
 
 const router = Router()
 
@@ -16,9 +19,26 @@ router.get('/me', (req: AdminAuthedRequest, res: Response) => {
   res.json({ uid: u.uid, email: u.email ?? null })
 })
 
-// GET /admin/orders — all picking orders (queued + assigned + …)
-router.get('/orders', async (_req: Request, res: Response) => {
-  res.json(await readOrders())
+// GET /admin/orders — Firestore first (fast). Full WC sync runs in background unless ?sync=0
+router.get('/orders', async (req: Request, res: Response) => {
+  const raw = req.query['sync']
+  const q = Array.isArray(raw) ? raw[0] : raw
+  const firestoreOnly = q === '0' || q === 'false'
+
+  const orders = await readOrders()
+
+  let syncTag: 'ok' | 'skipped' | 'error' | 'pending' | 'cache' = 'skipped'
+  if (firestoreOnly) {
+    syncTag = 'cache'
+  } else if (!loadWooCommerceConfig()) {
+    syncTag = 'skipped'
+  } else {
+    kickWooCommerceFullSyncInBackground()
+    syncTag = 'pending'
+  }
+
+  res.setHeader('X-ASIF-WC-Sync', syncTag)
+  res.json(orders)
 })
 
 // POST /admin/orders/:id/assign — attach picker (collector id) to a queued/assigned order
@@ -44,9 +64,34 @@ router.post('/orders/:id/assign', async (req: Request, res: Response) => {
     return
   }
   order.assignedTo = collectorId
-  order.status = 'assigned'
+  if (order.status === 'queued') {
+    order.status = 'assigned'
+  }
   await saveOrder(order)
   res.json(order)
+})
+
+// GET /admin/collectors/:collectorId/stats?days=7 | &from=ISO&to=ISO — pick timing stats
+router.get('/collectors/:collectorId/stats', async (req: Request, res: Response) => {
+  const collectorId = (req.params['collectorId'] as string).trim()
+  if (!collectorId) {
+    res.status(400).json({ error: 'collectorId required' })
+    return
+  }
+  const user = await findUser(collectorId)
+  if (!user || user.role !== 'collector') {
+    res.status(404).json({ error: 'Collector not found' })
+    return
+  }
+  const q = req.query as { days?: string; from?: string; to?: string }
+  const range = parseStatsRange(q)
+  const orders = await readOrders()
+  const stats = computeCollectorStats(orders, collectorId, range)
+  res.json({
+    collectorId,
+    collectorName: user.name,
+    ...stats,
+  })
 })
 
 // GET /admin/users — list all users

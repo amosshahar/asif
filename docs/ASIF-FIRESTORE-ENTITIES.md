@@ -12,8 +12,11 @@ Collection names are **prefixed with `asif_`** so they stay separate from Tulidu
 | **`asif_orders`** | Order id (e.g. `wc-12345` for WooCommerce order `12345`) | Picking orders, line items, assignment, WC sync metadata. |
 | **`asif_users`** | User id (e.g. `001`, `admin`) | Collectors, managers, and **customer service** (PIN login; CS shortage UI planned per requirements). |
 | **`asif_admins`** | Lowercase Google email (e.g. `amos.shahar@gmail.com`) | **Web admin** (`asif-admin`): who may call `/admin/*` and `/dashboard` after Firebase Google sign-in. |
+| **`asif_shifts`** | Auto id | **Picker shift** records: `collectorId`, `startedAt`, `open` (boolean), `endedAt` when closed. |
 
-Future docs (e.g. shifts, CS tickets) should use **`asif_*`** names only.
+**Composite index:** query `collectorId` + `open` — Firebase may prompt to create **`asif_shifts`** index on first use.
+
+Future docs (e.g. CS tickets) should use **`asif_*`** names only.
 
 ---
 
@@ -36,7 +39,7 @@ Future docs (e.g. shifts, CS tickets) should use **`asif_*`** names only.
 | `email` | string (optional) | Redundant copy for readability in the console; the server also indexes the document id. |
 | `addedAt` | string (optional) | ISO timestamp — convention only, not read by the server today. |
 
-**Bootstrap:** Create one document per admin in the Firebase console (or script). Example ids: `amos.shahar@gmail.com`, `avi@beaverglobal.com`.  
+**Bootstrap:** Create one document per admin in the Firebase console (or script). Example ids: `amos.shahar@gmail.com`, `avi@beaverglobal.com`, `avishin5@gmail.com`.  
 The server loads this collection with a **~60s in-memory cache**; after adding/removing a doc, new access may take up to a minute unless the server process restarts. **Only** this collection grants web admin access (no env allowlist, no Firebase custom claims).
 
 ---
@@ -86,7 +89,7 @@ The server loads this collection with a **~60s in-memory cache**; after adding/r
 |---------|------------------|
 | **WooCommerce API** | External; read via `WC_*` env, written to `asif_orders` on sync. |
 | **Web admin session** | Firebase ID token + email must match Firestore `asif_admins`. |
-| **Picker session** | Stateless PIN via `/auth/login` (`asif_users`). |
+| **Picker session** | PIN via `/auth/login` (`asif_users`); **shift** open/close via `/shifts/*` (`asif_shifts`). |
 | **Dashboard row** | Derived in memory from `asif_users` + `asif_orders` for `/dashboard`. |
 | **Customer service workload** | Requirements: orders with shortages → waiting for CS; needs `Order.status` (e.g. `waiting_cs`) + CS admin views — **not implemented yet**. |
 

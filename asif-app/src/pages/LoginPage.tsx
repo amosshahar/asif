@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { isAxiosError } from 'axios'
 const logo = '/logo.png'
-import { login } from '../api'
+import { login, startCollectorShift } from '../api'
 import { saveUser } from '../auth'
 import type { AuthUser } from '../api'
 import s from './LoginPage.module.css'
@@ -23,6 +23,9 @@ export default function LoginPage({ onLogin }: Props) {
     setLoading(true)
     try {
       const user = await login(id.trim(), pin)
+      if (user.role === 'collector') {
+        await startCollectorShift(user.id)
+      }
       await saveUser(user)
       onLogin(user)
     } catch (err) {

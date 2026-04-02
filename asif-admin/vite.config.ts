@@ -17,6 +17,14 @@ export default defineConfig({
         target: 'http://127.0.0.1:3002',
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/asif-api/, '') || '/',
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes) => {
+            const h = proxyRes.headers['x-asif-wc-sync']
+            if (h) {
+              proxyRes.headers['access-control-expose-headers'] = 'X-ASIF-WC-Sync'
+            }
+          })
+        },
       },
     },
   },

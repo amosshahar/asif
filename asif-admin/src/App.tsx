@@ -3,11 +3,13 @@ import './theme.css'
 import logo from './assets/logo-light.png'
 import { useAuth } from './AuthContext'
 import UsersPage from './pages/UsersPage'
+import OrdersPage from './pages/OrdersPage'
 import DashboardPage from './pages/DashboardPage'
+import CollectorStatsPage from './pages/CollectorStatsPage'
 import LoginPage from './pages/LoginPage'
 import s from './App.module.css'
 
-type Page = 'dashboard' | 'users'
+type Page = 'dashboard' | 'orders' | 'users'
 
 export default function App() {
   const { user, loading, logout } = useAuth()
@@ -37,6 +39,18 @@ export default function App() {
             דשבורד
           </button>
           <button
+            className={`${s.navBtn} ${page === 'stats' ? s.active : ''}`}
+            onClick={() => setPage('stats')}
+          >
+            מדידות
+          </button>
+          <button
+            className={`${s.navBtn} ${page === 'orders' ? s.active : ''}`}
+            onClick={() => setPage('orders')}
+          >
+            הזמנות
+          </button>
+          <button
             className={`${s.navBtn} ${page === 'users' ? s.active : ''}`}
             onClick={() => setPage('users')}
           >
@@ -52,7 +66,15 @@ export default function App() {
         </button>
       </header>
       <main className={s.main}>
-        {page === 'dashboard' ? <DashboardPage /> : <UsersPage />}
+        {page === 'dashboard' ? (
+          <DashboardPage />
+        ) : page === 'stats' ? (
+          <CollectorStatsPage />
+        ) : page === 'orders' ? (
+          <OrdersPage />
+        ) : (
+          <UsersPage />
+        )}
       </main>
     </div>
   )

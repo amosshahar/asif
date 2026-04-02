@@ -17,16 +17,31 @@ export class FirestoreOrderPersistence implements OrderPersistence {
     const snap = await this.col().get()
     const out: Order[] = []
     snap.forEach(doc => {
-      const d = doc.data() as Order
-      if (d && d.id) out.push(d)
+      const d = doc.data() as Order | undefined
+      if (!d) return
+      // Prefer `id` on the document; fall back to Firestore doc id (some writes omit `id` in payload).
+      const id = (d.id && String(d.id)) || doc.id
+      if (!id) return
+      const assignedTo =
+        d.assignedTo == null || d.assignedTo === ''
+          ? null
+          : String(d.assignedTo).trim()
+      out.push({ ...d, id, assignedTo })
     })
     return out
   }
 
-  async get(id: string): Promise<Order | undefined> {
-    const doc = await this.col().doc(id).get()
+  async get(orderId: string): Promise<Order | undefined> {
+    const doc = await this.col().doc(orderId).get()
     if (!doc.exists) return undefined
-    return doc.data() as Order
+    const d = doc.data() as Order | undefined
+    if (!d) return undefined
+    const id = (d.id && String(d.id)) || doc.id
+    const assignedTo =
+      d.assignedTo == null || d.assignedTo === ''
+        ? null
+        : String(d.assignedTo).trim()
+    return { ...d, id, assignedTo }
   }
 
   async put(order: Order): Promise<void> {

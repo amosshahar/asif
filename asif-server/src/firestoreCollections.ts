@@ -6,3 +6,5 @@ export const ASIF_ORDERS_COLLECTION = 'asif_orders'
 export const ASIF_USERS_COLLECTION = 'asif_users'
 /** Web admin allowlist: one doc per admin; see docs/ASIF-FIRESTORE-ENTITIES.md */
 export const ASIF_ADMINS_COLLECTION = 'asif_admins'
+/** Picker shift records (start / end); see docs/ASIF-FIRESTORE-ENTITIES.md */
+export const ASIF_SHIFTS_COLLECTION = 'asif_shifts'

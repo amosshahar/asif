@@ -92,18 +92,124 @@ export const updateUser = (id: string, payload: Partial<UserPayload>) =>
 export const deleteUser = (id: string) =>
   api.delete(`/admin/users/${id}`)
 
+/** ASIF order (admin list — matches server) */
+export interface Order {
+  id: string
+  wcOrderId?: number
+  customerName: string
+  status: 'queued' | 'assigned' | 'in_progress' | 'completed' | 'waiting_cs'
+  assignedTo: string | null
+  startedAt: string | null
+  completedAt: string | null
+  syncedAt?: string
+  items: Array<{ sku: string; name: string; quantity: number; status: string }>
+  distributionArea?: string | null
+  deliveryDate?: string | null
+  deliveryTimeFrom?: string | null
+  deliveryTimeTo?: string | null
+  csHandoffReason?: string | null
+  customerNote?: string | null
+}
+
+export type WcSyncOnLoad = 'ok' | 'skipped' | 'error' | 'pending' | 'cache'
+
+export async function getOrders(opts?: {
+  firestoreOnly?: boolean
+}): Promise<{ orders: Order[]; wcSync: WcSyncOnLoad }> {
+  const q = opts?.firestoreOnly === true ? '?sync=0' : ''
+  const r = await api.get<Order[]>(`/admin/orders${q}`)
+  const h = String(
+    r.headers['x-asif-wc-sync'] ?? r.headers['X-ASIF-WC-Sync'] ?? ''
+  ).toLowerCase()
+  const wcSync: WcSyncOnLoad =
+    h === 'ok' || h === 'skipped' || h === 'error' || h === 'pending' || h === 'cache'
+      ? h
+      : 'skipped'
+  return {
+    orders: Array.isArray(r.data) ? r.data : [],
+    wcSync,
+  }
+}
+
+export interface WooCommerceAdminStatus {
+  configured: boolean
+  storeUrl: string | null
+  lastError: string | null
+  fullSyncRunning: boolean
+  fullSyncLastError: string | null
+  persistence: string
+  ordersCollection: string
+  usersCollection: string
+  defaultStatuses?: string[]
+}
+
+export const getWooCommerceAdminStatus = () =>
+  api.get<WooCommerceAdminStatus>('/admin/woocommerce/status').then((r) => r.data)
+
+export const assignOrder = (orderId: string, collectorId: string) =>
+  api.post<Order>(`/admin/orders/${orderId}/assign`, { collectorId }).then((r) => r.data)
+
+export interface WooSyncResult {
+  ok: boolean
+  persistence?: string
+  collection?: string
+  pages: number
+  fetched: number
+  inserted: number
+  replaced: number
+  metaOnly: number
+  errors: string[]
+}
+
+export const syncWooCommerceOrders = () =>
+  api.post<WooSyncResult>('/admin/woocommerce/sync').then((r) => r.data)
+
+export interface DashboardOrderEntry {
+  id: string
+  status: 'queued' | 'assigned' | 'in_progress' | 'waiting_cs' | 'completed'
+  startedAt: string | null
+  total: number
+  collected: number
+  missing: number
+  actionable: boolean
+}
+
 export interface DashboardRow {
   collectorId: string
   collectorName: string
-  order: {
-    id: string
-    status: 'queued' | 'assigned' | 'in_progress' | 'completed'
-    startedAt: string | null
-    total: number
-    collected: number
-    missing: number
-  } | null
+  orders: DashboardOrderEntry[]
 }
 
 export const getDashboard = () =>
   api.get<DashboardRow[]>('/dashboard').then(r => r.data)
+
+export interface CollectorStatsOrderRow {
+  orderId: string
+  completedAt: string | null
+  pickDurationSeconds: number | null
+  avgGapBetweenItemsSeconds: number | null
+  timeToFirstItemSeconds: number | null
+  itemsResolved: number
+}
+
+export interface CollectorStatsPayload {
+  collectorId: string
+  collectorName: string
+  from: string
+  to: string
+  orderCount: number
+  ordersWithPickTiming: number
+  avgPickDurationSeconds: number | null
+  medianPickDurationSeconds: number | null
+  avgGapBetweenItemsSeconds: number | null
+  medianGapBetweenItemsSeconds: number | null
+  avgTimeToFirstItemSeconds: number | null
+  orders: CollectorStatsOrderRow[]
+}
+
+export const getCollectorStats = (collectorId: string, opts?: { days?: number }) => {
+  const d = opts?.days != null ? `?days=${opts.days}` : ''
+  return api
+    .get<CollectorStatsPayload>(`/admin/collectors/${encodeURIComponent(collectorId)}/stats${d}`)
+    .then((r) => r.data)
+}

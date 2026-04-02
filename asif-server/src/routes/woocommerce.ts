@@ -2,8 +2,11 @@ import { Router, Request, Response } from 'express'
 import { loadWooCommerceConfig, publicStoreOrigin } from '../integrations/woocommerce/config'
 import { getWcOrderById, listOrders, WooCommerceHttpError } from '../integrations/woocommerce/client'
 import { mapWcOrderToOrder } from '../integrations/woocommerce/mapWcOrder'
-import { syncAllWooCommerceOrders } from '../integrations/woocommerce/sync'
-import { getOrderPersistence } from '../persistence/orderPersistence'
+import {
+  getWooCommerceFullSyncLastError,
+  isWooCommerceFullSyncRunning,
+  runWooCommerceFullSync,
+} from '../wcFullSync'
 import { ASIF_ORDERS_COLLECTION, ASIF_USERS_COLLECTION } from '../firestoreCollections'
 
 const router = Router()
@@ -18,6 +21,8 @@ router.get('/status', (_req: Request, res: Response) => {
       configured: false,
       storeUrl: null,
       lastError: lastWcError,
+      fullSyncRunning: false,
+      fullSyncLastError: getWooCommerceFullSyncLastError(),
       persistence: 'firestore',
       ordersCollection: ASIF_ORDERS_COLLECTION,
       usersCollection: ASIF_USERS_COLLECTION,
@@ -28,6 +33,8 @@ router.get('/status', (_req: Request, res: Response) => {
     storeUrl: publicStoreOrigin(config),
     defaultStatuses: config.orderStatuses,
     lastError: lastWcError,
+    fullSyncRunning: isWooCommerceFullSyncRunning(),
+    fullSyncLastError: getWooCommerceFullSyncLastError(),
     persistence: 'firestore',
     ordersCollection: ASIF_ORDERS_COLLECTION,
     usersCollection: ASIF_USERS_COLLECTION,
@@ -96,16 +103,14 @@ router.get('/orders/:wcId/mapped', async (req: Request, res: Response) => {
   }
 })
 
-// POST /admin/woocommerce/sync — pull WC orders into asif_orders (or JSON file if Firestore off)
+// POST /admin/woocommerce/sync — full WC → Firestore (shares in-flight job with background sync)
 router.post('/sync', async (_req: Request, res: Response) => {
-  const config = loadWooCommerceConfig()
-  if (!config) {
+  if (!loadWooCommerceConfig()) {
     res.status(503).json({ error: 'WooCommerce is not configured' })
     return
   }
   try {
-    const persistence = getOrderPersistence()
-    const result = await syncAllWooCommerceOrders(config, persistence)
+    const result = await runWooCommerceFullSync()
     lastWcError = null
     res.json({
       ok: true,

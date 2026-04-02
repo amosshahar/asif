@@ -1,12 +1,35 @@
 import { useState } from 'react'
+import { isAxiosError } from 'axios'
 import { CapacitorException, ExceptionCode } from '@capacitor/core'
 import type { Order, OrderItem } from '../api'
-import { updateItem, completeOrder } from '../api'
+import { updateItem, completeOrder, setCustomerServiceHandoff } from '../api'
 import { scanBarcode } from '../scanner'
 import MissingModal from '../components/MissingModal'
+import CsHandoffModal from '../components/CsHandoffModal'
 import MismatchModal from '../components/MismatchModal'
 import WeightModal from '../components/WeightModal'
 import s from './PickListPage.module.css'
+
+function formatKg(n: number): string {
+  const r = Math.round(n * 1000) / 1000
+  const s = r.toFixed(3).replace(/\.?0+$/, '')
+  return s || '0'
+}
+
+/** תצוגת כמות מבוקשת: יחידות / משקל / שילוב לפי שדות מ־WC. */
+function orderedQtyLabel(item: OrderItem): string {
+  if (item.unit === 'piece') {
+    return `${item.quantity} יח׳`
+  }
+  const pieces = item.orderedPiecesCount
+  const kg = item.orderedTotalWeightKg
+  const parts: string[] = []
+  if (pieces != null && pieces > 0) parts.push(`${pieces} יח׳`)
+  if (kg != null && kg > 0) parts.push(`סה״כ ~${formatKg(kg)} ק״ג`)
+  if (parts.length > 0) return parts.join(' · ')
+  const unitLabel = item.unit === 'g' ? 'גרם' : 'ק"ג'
+  return `~${item.quantity} ${unitLabel}`
+}
 
 function scanFailureToHebrew(e: unknown): string {
   if (e instanceof CapacitorException && e.code === ExceptionCode.Unimplemented) {
@@ -29,6 +52,8 @@ function scanFailureToHebrew(e: unknown): string {
 interface Props {
   order: Order
   onOrderComplete: () => void
+  /** מעדכן את אובייקט ההזמנה אחרי העברה לשירות / ניקוי הערה. */
+  onOrderUpdated?: (order: Order) => void
   onBack: () => void
 }
 
@@ -44,20 +69,35 @@ function groupByAisle(items: OrderItem[]): GroupedItems {
   return Array.from(map.values())
 }
 
-export default function PickListPage({ order, onOrderComplete, onBack }: Props) {
+export default function PickListPage({ order, onOrderComplete, onOrderUpdated, onBack }: Props) {
   const [items, setItems]             = useState<OrderItem[]>(order.items)
   const [missingItem, setMissingItem] = useState<OrderItem | null>(null)
-  const [mismatch, setMismatch]       = useState<{ item: OrderItem; scanned: string } | null>(null)
+  const [mismatch, setMismatch]       = useState<{
+    item: OrderItem
+    scanned: string
+    expected: string
+  } | null>(null)
   const [scanning, setScanning]       = useState<string | null>(null)
   const [scanError, setScanError]     = useState('')
   const [weightItem, setWeightItem]   = useState<OrderItem | null>(null)
+  const [weightModalError, setWeightModalError] = useState('')
   const [completing, setCompleting]   = useState(false)
+  const [completeError, setCompleteError] = useState('')
+  const [csModalOpen, setCsModalOpen] = useState(false)
+  const [handoffError, setHandoffError] = useState('')
+  const [handoffSubmitting, setHandoffSubmitting] = useState(false)
 
   const collected = items.filter(i => i.status !== 'pending').length
   const total     = items.length
   const allDone   = collected === total
+  const hasMissingLine = items.some(i => i.status === 'missing')
+  const handoffNote = (order.csHandoffReason ?? '').trim()
 
   const groups = groupByAisle(items)
+
+  function expectedCode(item: OrderItem): string {
+    return (item.barcode || item.sku || '').trim()
+  }
 
   async function handleScan(item: OrderItem) {
     setScanning(item.id)
@@ -65,10 +105,11 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
     try {
       const scanned = await scanBarcode()
       if (!scanned) return // user closed scanner without a read
-      if (!item.barcode || scanned === item.barcode) {
-        await markCollected(item, 'scan')           // match (or no barcode on file)
+      const expected = expectedCode(item)
+      if (!expected || scanned === expected) {
+        await markCollected(item, 'scan')
       } else {
-        setMismatch({ item, scanned })              // mismatch → show modal
+        setMismatch({ item, scanned, expected })
       }
     } catch (e) {
       console.error('[ASIF scan]', e)
@@ -83,19 +124,44 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
     await markCollected(item, 'scan')
   }
 
-  async function markCollected(item: OrderItem, method: 'scan' | 'manual' | 'scale', weight?: number) {
+  async function markCollected(
+    item: OrderItem,
+    method: 'scan' | 'manual' | 'scale',
+    weight?: number,
+    acknowledgeWeightDeviation?: boolean
+  ) {
     const updated = await updateItem(order.id, item.id, {
       status: 'collected',
       collectedQuantity: item.quantity,
       collectedWeight: weight ?? null,
       collectionMethod: method,
+      ...(acknowledgeWeightDeviation ? { acknowledgeWeightDeviation: true } : {}),
     })
-    setItems(prev => prev.map(i => i.id === updated.id ? updated : i))
+    setItems(prev => prev.map(i => (i.id === updated.id ? updated : i)))
   }
 
-  async function handleWeightConfirm(item: OrderItem, weight: number) {
-    setWeightItem(null)
-    await markCollected(item, 'scale', weight)
+  async function handleWeightConfirm(
+    item: OrderItem,
+    weight: number,
+    acknowledgeDeviationOver20: boolean
+  ) {
+    setWeightModalError('')
+    try {
+      await markCollected(item, 'scale', weight, acknowledgeDeviationOver20)
+      setWeightItem(null)
+    } catch (e: unknown) {
+      if (
+        isAxiosError(e) &&
+        e.response?.status === 409 &&
+        (e.response.data as { code?: string })?.code === 'WEIGHT_DEVIATION_OVER_20'
+      ) {
+        setWeightModalError(
+          'יש לאשר משקל שחורג מ־±20% — ודאו את הערך ולחצו ״אשר משקל (חריגה)״.'
+        )
+        return
+      }
+      throw e
+    }
   }
 
   async function markMissing(item: OrderItem, reason: string) {
@@ -107,27 +173,50 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
     setMissingItem(null)
   }
 
-  function undoItem(item: OrderItem) {
-    updateItem(order.id, item.id, {
-      status: 'pending',
-      collectedQuantity: null,
-      collectedWeight: null,
-      collectionMethod: null,
-      missingReason: undefined,
-    })
-    setItems(prev => prev.map(i => i.id === item.id
-      ? { ...i, status: 'pending', collectedQuantity: null, collectedWeight: null, collectionMethod: null }
-      : i
-    ))
+  async function undoItem(item: OrderItem) {
+    try {
+      const updated = await updateItem(order.id, item.id, {
+        status: 'pending',
+        collectedQuantity: null,
+        collectedWeight: null,
+        collectionMethod: null,
+        missingReason: '',
+      })
+      setItems(prev => prev.map(i => (i.id === updated.id ? updated : i)))
+    } catch {
+      setItems(prev => prev.map(i => i.id === item.id
+        ? { ...i, status: 'pending', collectedQuantity: null, collectedWeight: null, collectionMethod: null }
+        : i
+      ))
+    }
   }
 
   async function handleComplete() {
     setCompleting(true)
+    setCompleteError('')
     try {
       await completeOrder(order.id)
       onOrderComplete()
+    } catch (e: unknown) {
+      const ax = e as { response?: { data?: { error?: string } } }
+      setCompleteError(ax.response?.data?.error ?? 'לא ניתן לסיים את ההזמנה')
     } finally {
       setCompleting(false)
+    }
+  }
+
+  async function submitHandoff(reason: string) {
+    setHandoffSubmitting(true)
+    setHandoffError('')
+    try {
+      const updated = await setCustomerServiceHandoff(order.id, reason)
+      onOrderUpdated?.(updated)
+      setCsModalOpen(false)
+    } catch (e: unknown) {
+      const ax = e as { response?: { data?: { error?: string } } }
+      setHandoffError(ax.response?.data?.error ?? 'לא ניתן לשמור')
+    } finally {
+      setHandoffSubmitting(false)
     }
   }
 
@@ -146,7 +235,42 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
         <div className={s.progressFill} style={{ width: `${(collected / total) * 100}%` }} />
       </div>
 
+      {(order.customerNote ?? '').trim() ? (
+        <div className={s.orderNoteBanner} role="status">
+          <span className={s.orderNoteLabel}>הערת לקוח</span>
+          <span className={s.orderNoteText}>{order.customerNote}</span>
+        </div>
+      ) : null}
+
       {scanError ? <p className={s.scanError}>{scanError}</p> : null}
+      {completeError ? <p className={s.scanError}>{completeError}</p> : null}
+      {handoffError ? <p className={s.scanError}>{handoffError}</p> : null}
+      {hasMissingLine && handoffNote ? (
+        <p className={s.csBanner}>
+          מסומן לשירות לקוחות: יש פריטים חסרים והערת מלקט — סיימו את שאר השורות ואז לחצו ״סיים
+          וסגור הזמנה״.
+        </p>
+      ) : hasMissingLine ? (
+        <p className={s.csBanner}>מסומן לשירות לקוחות (חסרים) — סיימו את שאר השורות ואז לחצו ״סיים וסגור הזמנה״.</p>
+      ) : handoffNote ? (
+        <p className={s.csBanner}>
+          מסומן לשירות לקוחות לפי הערת המלקט — ניתן להמשיך ליקוט; בסיום לחצו ״סיים וסגור הזמנה״.
+        </p>
+      ) : null}
+
+      <div className={s.csHandoffRow}>
+        <button
+          type="button"
+          className={s.csHandoffBtn}
+          disabled={handoffSubmitting}
+          onClick={() => {
+            setHandoffError('')
+            setCsModalOpen(true)
+          }}
+        >
+          {handoffNote ? 'עריכת הערה לשירות לקוחות' : 'העברה לשירות לקוחות (עם הערה)'}
+        </button>
+      </div>
 
       <div className={s.list}>
         {groups.map(group => (
@@ -158,9 +282,13 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
                 item={item}
                 scanning={scanning === item.id}
                 onScan={() => handleScan(item)}
-                onCollect={() => item.unit !== 'piece' ? setWeightItem(item) : markCollected(item, 'manual')}
+                onWeight={() => {
+                  setWeightModalError('')
+                  setWeightItem(item)
+                }}
+                onCollect={() => markCollected(item, 'manual')}
                 onMissing={() => setMissingItem(item)}
-                onUndo={() => undoItem(item)}
+                onUndo={() => void undoItem(item)}
               />
             ))}
           </div>
@@ -183,13 +311,30 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
         />
       )}
 
+      {csModalOpen && (
+        <CsHandoffModal
+          initialReason={order.csHandoffReason}
+          canClearNote={!hasMissingLine && Boolean(handoffNote)}
+          busy={handoffSubmitting}
+          onConfirm={(reason) => void submitHandoff(reason)}
+          onClearNote={() => void submitHandoff('')}
+          onClose={() => {
+            if (!handoffSubmitting) setCsModalOpen(false)
+          }}
+        />
+      )}
+
       {weightItem && (
         <WeightModal
           itemName={weightItem.name}
           targetQty={weightItem.quantity}
           unit={weightItem.unit as 'kg' | 'g'}
-          onConfirm={w => handleWeightConfirm(weightItem, w)}
-          onClose={() => setWeightItem(null)}
+          submitError={weightModalError}
+          onConfirm={(w, ack) => void handleWeightConfirm(weightItem, w, ack)}
+          onClose={() => {
+            setWeightModalError('')
+            setWeightItem(null)
+          }}
         />
       )}
 
@@ -197,9 +342,9 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
         <MismatchModal
           itemName={mismatch.item.name}
           scanned={mismatch.scanned}
-          expected={mismatch.item.barcode}
+          expected={mismatch.expected}
           onForceConfirm={() => handleForceConfirm(mismatch.item)}
-          onRetry={() => { setMismatch(null); handleScan(mismatch.item) }}
+          onRetry={() => { setMismatch(null); void handleScan(mismatch.item) }}
           onClose={() => setMismatch(null)}
         />
       )}
@@ -213,34 +358,53 @@ interface CardProps {
   item: OrderItem
   scanning: boolean
   onScan: () => void
+  onWeight: () => void
   onCollect: () => void
   onMissing: () => void
   onUndo: () => void
 }
 
-function ItemCard({ item, scanning, onScan, onCollect, onMissing, onUndo }: CardProps) {
+function ItemCard({ item, scanning, onScan, onWeight, onCollect, onMissing, onUndo }: CardProps) {
   const isWeighed   = item.unit !== 'piece'
   const isDone      = item.status !== 'pending'
   const isMissing   = item.status === 'missing'
   const isCollected = item.status === 'collected'
+  const hasLocation = item.location.label.trim() !== '' && item.location.label !== '—'
 
   return (
     <div className={`${s.card} ${isDone ? (isMissing ? s.cardMissing : s.cardCollected) : ''}`}>
       <div className={s.cardTop}>
-        <div className={s.itemInfo}>
-          <span className={s.itemName}>{item.name}</span>
-          {item.brand && <span className={s.itemBrand}>{item.brand}</span>}
-          <div className={s.badges}>
-            <span className={s.qty}>
-              {isWeighed ? `~${item.quantity} ק"ג` : `${item.quantity} יח׳`}
-            </span>
-            {isWeighed && <span className={s.weighBadge}>שקול</span>}
-          </div>
-          {item.customerNote ? (
-            <div className={s.note}>
-              <span className={s.noteIcon}>💬</span> {item.customerNote}
+        <div className={s.cardBody}>
+          {item.imageUrl ? (
+            <img
+              className={s.thumb}
+              src={item.imageUrl}
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <div className={s.thumbPlaceholder} aria-hidden />
+          )}
+          <div className={s.itemInfo}>
+            <span className={s.itemName}>{item.name}</span>
+            {item.brand && <span className={s.itemBrand}>{item.brand}</span>}
+            {hasLocation ? (
+              <div className={s.locationRow}>
+                <span className={s.locationIcon} aria-hidden>📍</span>
+                <span>{item.location.label}</span>
+              </div>
+            ) : null}
+            <div className={s.badges}>
+              <span className={s.qty}>{orderedQtyLabel(item)}</span>
+              {isWeighed && <span className={s.weighBadge}>שקול</span>}
             </div>
-          ) : null}
+            {item.customerNote ? (
+              <div className={s.note}>
+                <span className={s.noteIcon}>💬</span> {item.customerNote}
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {isDone && (
@@ -250,14 +414,29 @@ function ItemCard({ item, scanning, onScan, onCollect, onMissing, onUndo }: Card
 
       {!isDone && (
         <div className={s.cardActions}>
-          <button className={s.missingBtn} onClick={onMissing}>חסר</button>
-          {item.barcode && (
-            <button className={s.scanBtn} onClick={onScan} disabled={scanning}>
-              {scanning ? '...' : '📷 סרוק'}
-            </button>
-          )}
-          <button className={s.collectBtn} onClick={onCollect}>
-            {isWeighed ? 'שקל ואשר' : 'אסוף'}
+          <button type="button" className={s.missingBtn} onClick={onMissing}>
+            חסר
+          </button>
+          <button type="button" className={s.scanBtn} onClick={onScan} disabled={scanning}>
+            {scanning ? '...' : '📷 סרוק'}
+          </button>
+          <button
+            type="button"
+            className={s.weightBtn}
+            onClick={onWeight}
+            disabled={!isWeighed}
+            title={isWeighed ? 'הזנת משקל (ק״ג / גרם)' : 'פריט לפי יחידה — אין הזנת משקל'}
+          >
+            משקל
+          </button>
+          <button
+            type="button"
+            className={s.collectBtn}
+            onClick={onCollect}
+            disabled={isWeighed}
+            title={isWeighed ? 'לפריט שקיל — השתמשו ב״משקל״ או ב״סרוק״' : 'איסוף לפי כמות (יחידות)'}
+          >
+            אסוף
           </button>
         </div>
       )}

@@ -63,6 +63,71 @@
   border-radius: 8px;
 }
 
+.orderNoteBanner {
+  margin: 0 16px 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #0f172a;
+  background: #e0f2fe;
+  border-radius: 8px;
+  border: 1px solid #7dd3fc;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+
+.orderNoteLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0369a1;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.orderNoteText {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.csBanner {
+  margin: 0 16px 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #92400e;
+  background: #fffbeb;
+  border-radius: 8px;
+  border: 1px solid #fcd34d;
+}
+
+.csHandoffRow {
+  padding: 0 16px 12px;
+}
+
+.csHandoffBtn {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-primary);
+  color: var(--color-primary);
+  background: #fff;
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.csHandoffBtn:hover:not(:disabled) {
+  background: rgba(0, 48, 135, 0.06);
+}
+
+.csHandoffBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .progressBar {
   height: 5px;
   background: rgba(0,48,135,0.15);
@@ -124,11 +189,51 @@
   gap: 8px;
 }
 
+.cardBody {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: #f3f4f6;
+}
+
+.thumbPlaceholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #e5e7eb 0%, #f3f4f6 100%);
+}
+
+.locationRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #065f46;
+  margin-top: 2px;
+}
+
+.locationIcon {
+  flex-shrink: 0;
+}
+
 .itemInfo {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 3px;
+  min-width: 0;
 }
 
 .itemName {
@@ -180,7 +285,22 @@
 /* ── Actions ── */
 .cardActions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  align-items: stretch;
+}
+
+@media (max-width: 380px) {
+  .cardActions {
+    flex-direction: column;
+  }
+  .scanBtn,
+  .missingBtn,
+  .weightBtn,
+  .collectBtn {
+    flex: none !important;
+    width: 100%;
+  }
 }
 
 .scanBtn {
@@ -198,6 +318,30 @@
 
 .scanBtn:active { background: #eff6ff; }
 .scanBtn:disabled { opacity: 0.5; }
+
+.weightBtn {
+  flex: 1.1;
+  padding: 11px;
+  background: transparent;
+  border: 1.5px solid #0d9488;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-primary);
+  color: #0f766e;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.weightBtn:active:not(:disabled) {
+  background: #ccfbf1;
+}
+
+.weightBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: #cbd5e1;
+  color: #94a3b8;
+}
 
 .missingBtn {
   flex: 1;
@@ -226,7 +370,13 @@
   cursor: pointer;
 }
 
-.collectBtn:active { background: var(--color-primary-dark); }
+.collectBtn:active:not(:disabled) { background: var(--color-primary-dark); }
+
+.collectBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: #94a3b8;
+}
 
 /* ── Done states ── */
 .doneRow, .missingRow {

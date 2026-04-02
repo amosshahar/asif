@@ -1,0 +1,118 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  z-index: 100;
+}
+
+.sheet {
+  width: 100%;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 16px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.handle {
+  width: 36px;
+  height: 4px;
+  background: #d1d5db;
+  border-radius: 2px;
+  align-self: center;
+  margin-bottom: 4px;
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: var(--font-primary);
+  border: 1.5px solid #e5e7eb;
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  text-align: right;
+  box-sizing: border-box;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.charHint {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  text-align: left;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.cancel {
+  flex: 1;
+  padding: 13px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  font-size: 15px;
+  font-family: var(--font-primary);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.confirm {
+  flex: 2;
+  padding: 13px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-error);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-primary);
+  cursor: pointer;
+}
+
+.confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.clearLink {
+  align-self: center;
+  padding: 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--font-primary);
+}

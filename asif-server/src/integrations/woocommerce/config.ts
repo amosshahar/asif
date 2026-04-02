@@ -41,3 +41,43 @@ export function publicStoreOrigin(config: WooCommerceConfig): string {
     return '(invalid WC_STORE_URL)'
   }
 }
+
+/** Comma-separated meta keys to try (first non-empty wins). Used when mapping WC → ASIF orders. */
+export interface WcOrderMetaKeyLists {
+  distributionArea: string[]
+  deliveryDate: string[]
+  deliveryTimeFrom: string[]
+  deliveryTimeTo: string[]
+}
+
+function splitEnvKeys(value: string | undefined, fallback: string): string[] {
+  return (value ?? fallback)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+/**
+ * Env vars (optional): `WC_META_KEYS_DISTRIBUTION_AREA`, `WC_META_KEYS_DELIVERY_DATE`,
+ * `WC_META_KEYS_DELIVERY_TIME_FROM`, `WC_META_KEYS_DELIVERY_TIME_TO` — comma-separated WC order meta keys.
+ */
+export function loadWcOrderMetaKeyLists(): WcOrderMetaKeyLists {
+  return {
+    distributionArea: splitEnvKeys(
+      process.env.WC_META_KEYS_DISTRIBUTION_AREA,
+      'אזור חלוקה,distribution_area,_distribution_area,shipping_area'
+    ),
+    deliveryDate: splitEnvKeys(
+      process.env.WC_META_KEYS_DELIVERY_DATE,
+      'תאריך חלוקה,delivery_date,_delivery_date,Delivery Date'
+    ),
+    deliveryTimeFrom: splitEnvKeys(
+      process.env.WC_META_KEYS_DELIVERY_TIME_FROM,
+      'שעת חלוקה מתי,delivery_time_from,_delivery_time_from,Delivery Time From'
+    ),
+    deliveryTimeTo: splitEnvKeys(
+      process.env.WC_META_KEYS_DELIVERY_TIME_TO,
+      'שעת חלוקה עד,delivery_time_to,_delivery_time_to,Delivery Time To'
+    ),
+  }
+}

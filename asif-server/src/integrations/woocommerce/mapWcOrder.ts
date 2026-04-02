@@ -1,8 +1,109 @@
 import type { Order, OrderItem } from '../../models/order'
+import { loadWcOrderMetaKeyLists } from './config'
 import type { WcLineItem, WcOrder } from './types'
 
 export function wcOrderDocId(wcNumericId: number): string {
   return `wc-${wcNumericId}`
+}
+
+let metaKeysCache: ReturnType<typeof loadWcOrderMetaKeyLists> | null = null
+function wcMetaKeys() {
+  if (!metaKeysCache) metaKeysCache = loadWcOrderMetaKeyLists()
+  return metaKeysCache
+}
+
+function metaEntryValue(v: unknown): string {
+  if (v == null) return ''
+  if (typeof v === 'string') return v.trim()
+  if (typeof v === 'number' && Number.isFinite(v)) return String(v)
+  if (typeof v === 'object' && v !== null) {
+    const o = v as Record<string, unknown>
+    if (typeof o.value === 'string') return o.value.trim()
+  }
+  return ''
+}
+
+function orderMetaByKeys(wc: WcOrder, keys: string[]): string {
+  const md = wc.meta_data ?? []
+  for (const key of keys) {
+    const hit = md.find((m) => m.key === key)
+    if (!hit) continue
+    const s = metaEntryValue(hit.value)
+    if (s) return s
+  }
+  return ''
+}
+
+function normalizeTimeString(raw: string): string | null {
+  const t = raw.trim()
+  const m = t.match(/^(\d{1,2})\s*:\s*(\d{2})/)
+  if (!m) return null
+  const h = Math.min(23, Math.max(0, parseInt(m[1], 10)))
+  const min = Math.min(59, Math.max(0, parseInt(m[2], 10)))
+  return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`
+}
+
+function normalizeDateYyyyMmDd(raw: string): string | null {
+  const s = raw.trim()
+  const isoLike = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (isoLike) return `${isoLike[1]}-${isoLike[2]}-${isoLike[3]}`
+  const eu = s.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/)
+  if (eu) {
+    const d = parseInt(eu[1], 10)
+    const mo = parseInt(eu[2], 10)
+    const y = eu[3]
+    if (d >= 1 && d <= 31 && mo >= 1 && mo <= 12) {
+      return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    }
+  }
+  return null
+}
+
+function dateFromWcCreated(dateCreated: string): string | null {
+  if (!dateCreated || dateCreated.length < 10) return null
+  return normalizeDateYyyyMmDd(dateCreated.slice(0, 10))
+}
+
+function logisticsFromWc(wc: WcOrder): Pick<
+  Order,
+  'distributionArea' | 'deliveryDate' | 'deliveryTimeFrom' | 'deliveryTimeTo'
+> {
+  const keys = wcMetaKeys()
+  const fromMeta = orderMetaByKeys(wc, keys.distributionArea).trim()
+  const fromShip = wc.shipping?.city?.trim() ?? ''
+  const fromBill = wc.billing?.city?.trim() ?? ''
+  let distributionArea: string | null = fromMeta || fromShip || fromBill || null
+  if (distributionArea === '') distributionArea = null
+
+  const dateRaw = orderMetaByKeys(wc, keys.deliveryDate).trim()
+  const deliveryDate =
+    (dateRaw ? normalizeDateYyyyMmDd(dateRaw) : null) ??
+    dateFromWcCreated(wc.date_created) ??
+    null
+
+  const fromRaw = orderMetaByKeys(wc, keys.deliveryTimeFrom).trim()
+  const toRaw = orderMetaByKeys(wc, keys.deliveryTimeTo).trim()
+
+  let deliveryTimeFrom = fromRaw ? normalizeTimeString(fromRaw) : null
+  let deliveryTimeTo = toRaw ? normalizeTimeString(toRaw) : null
+
+  if (!deliveryTimeFrom && !deliveryTimeTo) {
+    const combined = fromRaw || toRaw
+    const range = combined.match(
+      /^(\d{1,2}\s*:\s*\d{2})\s*[-–]\s*(\d{1,2}\s*:\s*\d{2})/
+    )
+    if (range) {
+      deliveryTimeFrom = normalizeTimeString(range[1])
+      deliveryTimeTo = normalizeTimeString(range[2])
+    }
+  }
+
+  return {
+    distributionArea,
+    deliveryDate,
+    deliveryTimeFrom,
+    deliveryTimeTo,
+  }
 }
 
 function lineMeta(line: WcLineItem, key: string): string {
@@ -12,6 +113,64 @@ function lineMeta(line: WcLineItem, key: string): string {
   const v = hit.value
   if (v == null) return ''
   return typeof v === 'string' ? v : String(v)
+}
+
+function parseLocalizedNumber(raw: string): number | null {
+  const s = raw.trim().replace(/,/g, '.')
+  const n = parseFloat(s)
+  return Number.isFinite(n) && n >= 0 ? n : null
+}
+
+/** First positive number from line meta keys (store-specific extensions). */
+function lineMetaNumber(line: WcLineItem, keys: string[]): number | null {
+  for (const k of keys) {
+    const s = lineMeta(line, k)
+    if (!s) continue
+    const n = parseLocalizedNumber(s)
+    if (n != null && n > 0) return n
+  }
+  return null
+}
+
+function imageUrlFromLine(line: WcLineItem): string {
+  const fromApi = (line.image?.src ?? '').trim()
+  if (fromApi) return fromApi
+  for (const k of ['_image_url', 'product_image_url', 'Product image', 'תמונה']) {
+    const m = lineMeta(line, k).trim()
+    if (m.startsWith('http://') || m.startsWith('https://')) return m
+  }
+  return ''
+}
+
+function locationFromLine(line: WcLineItem): { aisle: number; label: string } {
+  const candidates = [
+    lineMeta(line, 'מיקום'),
+    lineMeta(line, 'location'),
+    lineMeta(line, '_pick_location'),
+    lineMeta(line, 'איזור'),
+    lineMeta(line, 'aisle'),
+    lineMeta(line, 'מדף'),
+    lineMeta(line, 'shelf'),
+    lineMeta(line, 'מיקום במחסן'),
+  ]
+  const raw = candidates.map(s => s.trim()).find(Boolean) ?? ''
+  if (!raw) return { aisle: 0, label: '—' }
+  const m = raw.match(/\d+/)
+  const aisle = m ? parseInt(m[0], 10) : 0
+  return { aisle: Number.isFinite(aisle) ? aisle : 0, label: raw }
+}
+
+function lineCustomerNote(line: WcLineItem): string {
+  return (
+    lineMeta(line, 'הערות') ||
+    lineMeta(line, 'הערה') ||
+    lineMeta(line, 'note') ||
+    lineMeta(line, 'customer_note') ||
+    lineMeta(line, '_customer_note') ||
+    lineMeta(line, 'Customer note') ||
+    lineMeta(line, 'הערות לפריט') ||
+    ''
+  ).trim()
 }
 
 function inferUnit(line: WcLineItem): 'piece' | 'kg' | 'g' {
@@ -26,21 +185,54 @@ function inferUnit(line: WcLineItem): 'piece' | 'kg' | 'g' {
 function mapLine(line: WcLineItem): OrderItem {
   const unit = inferUnit(line)
   const qty = Number(line.quantity) || 0
+  const quantity = unit === 'piece' ? Math.max(1, Math.round(qty)) : qty
+
+  const piecesFromMeta = lineMetaNumber(line, [
+    'יחידות',
+    'pieces',
+    '_pieces',
+    'כמות_יחידות',
+    'Units',
+    'כמות יחידות',
+    '_number_of_items',
+  ])
+  const totalKgFromMeta = lineMetaNumber(line, [
+    'משקל_כולל',
+    'total_weight_kg',
+    '_total_weight_kg',
+    'סהכ_משקל',
+    'סה״כ משקל',
+    'סה"כ משקל',
+    'ordered_weight_kg',
+  ])
+
+  let orderedPiecesCount: number | null = null
+  let orderedTotalWeightKg: number | null = null
+  if (unit === 'piece') {
+    orderedPiecesCount = quantity
+  } else {
+    if (piecesFromMeta != null) orderedPiecesCount = Math.round(piecesFromMeta)
+    if (totalKgFromMeta != null) orderedTotalWeightKg = totalKgFromMeta
+    else if (unit === 'kg') orderedTotalWeightKg = qty
+    else orderedTotalWeightKg = qty > 0 ? qty / 1000 : null
+  }
+
   return {
     id: `wc-li-${line.id}`,
     sku: line.sku ?? '',
     name: line.name ?? '',
     brand: lineMeta(line, 'brand'),
-    quantity: unit === 'piece' ? Math.max(1, Math.round(qty)) : qty,
+    quantity,
     unit,
-    barcode: lineMeta(line, '_barcode') || lineMeta(line, 'barcode'),
-    imageUrl: line.image?.src ?? '',
-    location: { aisle: 0, label: '—' },
-    customerNote:
-      lineMeta(line, 'הערות') ||
-      lineMeta(line, 'note') ||
-      lineMeta(line, 'customer_note') ||
-      lineMeta(line, '_customer_note'),
+    barcode:
+      lineMeta(line, '_barcode') ||
+      lineMeta(line, 'barcode') ||
+      (line.sku != null ? String(line.sku).trim() : ''),
+    imageUrl: imageUrlFromLine(line),
+    location: locationFromLine(line),
+    orderedPiecesCount,
+    orderedTotalWeightKg,
+    customerNote: lineCustomerNote(line),
     status: 'pending',
     collectedQuantity: null,
     collectedWeight: null,
@@ -52,10 +244,13 @@ export function mapWcOrderToOrder(wc: WcOrder): Order {
   const first = wc.billing?.first_name?.trim() ?? ''
   const last = wc.billing?.last_name?.trim() ?? ''
   const customerName = [first, last].filter(Boolean).join(' ').trim() || 'לקוח'
+  const logistics = logisticsFromWc(wc)
+  const orderCustomerNote = (wc.customer_note ?? '').trim() || null
 
   return {
     id: wcOrderDocId(wc.id),
     customerName,
+    customerNote: orderCustomerNote,
     status: 'queued',
     assignedTo: null,
     startedAt: null,
@@ -64,5 +259,6 @@ export function mapWcOrderToOrder(wc: WcOrder): Order {
     wcOrderId: wc.id,
     wcStatus: wc.status,
     syncedAt: new Date().toISOString(),
+    ...logistics,
   }
 }

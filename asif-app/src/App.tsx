@@ -16,8 +16,11 @@ export default function App() {
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    loadUser().then(u => {
-      if (u) { setUser(u); setScreen('home') }
+    loadUser().then((u) => {
+      if (u) {
+        setUser(u)
+        setScreen('home')
+      }
       setChecking(false)
     })
   }, [])
@@ -42,6 +45,7 @@ export default function App() {
       <PickListPage
         order={order}
         onOrderComplete={() => { setOrder(null); setScreen('home') }}
+        onOrderUpdated={setOrder}
         onBack={() => setScreen('home')}
       />
     )

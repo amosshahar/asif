@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getDashboard } from '../api'
-import type { DashboardRow } from '../api'
+import type { DashboardOrderEntry, DashboardRow } from '../api'
 import s from './DashboardPage.module.css'
 
 const POLL_MS = 15_000
@@ -20,6 +20,7 @@ function elapsed(iso: string | null): string {
 const STATUS_LABEL: Record<string, string> = {
   assigned:    'ממתין',
   in_progress: 'באיסוף',
+  waiting_cs:  'ממתין לשירות',
   completed:   'הושלם',
 }
 
@@ -44,7 +45,11 @@ export default function DashboardPage() {
     return () => clearInterval(timer)
   }, [load])
 
-  const active = rows.filter(r => r.order?.status === 'in_progress').length
+  const active = rows.filter(r =>
+    r.orders.some(
+      o => o.actionable && (o.status === 'in_progress' || o.status === 'waiting_cs')
+    )
+  ).length
 
   return (
     <div className={s.page}>
@@ -74,52 +79,79 @@ export default function DashboardPage() {
 }
 
 function CollectorCard({ row }: { row: DashboardRow }) {
-  const o = row.order
-  const pct = o ? Math.round((o.collected / o.total) * 100) : 0
+  const list = row.orders
+  const primary = list.find(o => o.actionable)
+  const hasActivePick = list.some(
+    o => o.actionable && (o.status === 'in_progress' || o.status === 'waiting_cs')
+  )
 
   return (
-    <div className={`${s.card} ${o?.status === 'in_progress' ? s.active : ''}`}>
+    <div className={`${s.card} ${hasActivePick ? s.active : ''}`}>
       <div className={s.cardHeader}>
         <span className={s.collectorName}>{row.collectorName}</span>
-        {o && (
-          <span className={`${s.statusBadge} ${s[o.status]}`}>
-            {STATUS_LABEL[o.status]}
+        {primary && (
+          <span className={`${s.statusBadge} ${s[primary.status]}`}>
+            {STATUS_LABEL[primary.status]}
           </span>
         )}
       </div>
 
-      {!o && <p className={s.idle}>פנוי — אין הזמנה מוקצית</p>}
+      {list.length === 0 && (
+        <p className={s.idle}>פנוי — אין הזמנה מוקצית</p>
+      )}
 
-      {o && (
-        <>
-          <p className={s.orderId}>{o.id}</p>
+      {list.length > 0 && (
+        <div className={s.orderBlocks}>
+          {list.map(o => (
+            <OrderBlock key={o.id} o={o} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
-          <div className={s.progressWrap}>
-            <div className={s.progressBar}>
-              <div className={s.progressFill} style={{ width: `${pct}%` }} />
-            </div>
-            <span className={s.progressLabel}>{o.collected} / {o.total}</span>
+function OrderBlock({ o }: { o: DashboardOrderEntry }) {
+  const pct = o.total ? Math.round((o.collected / o.total) * 100) : 0
+  const disabled = !o.actionable
+
+  return (
+    <div className={`${s.orderBlock} ${disabled ? s.orderBlockDisabled : ''}`}>
+      <div className={s.orderBlockHeader}>
+        <p className={s.orderId}>{o.id}</p>
+        {!o.actionable && (
+          <span className={s.queuePill}>בתור</span>
+        )}
+      </div>
+
+      <div className={s.progressWrap}>
+        <div className={s.progressBar}>
+          <div className={s.progressFill} style={{ width: `${pct}%` }} />
+        </div>
+        <span className={s.progressLabel}>{o.collected} / {o.total}</span>
+      </div>
+
+      <div className={s.meta}>
+        <div className={s.metaItem}>
+          <span className={s.metaLabel}>התחלה</span>
+          <span className={s.metaValue}>{formatTime(o.startedAt)}</span>
+        </div>
+        {o.startedAt && (
+          <div className={s.metaItem}>
+            <span className={s.metaLabel}>זמן</span>
+            <span className={s.metaValue}>{elapsed(o.startedAt)}</span>
           </div>
-
-          <div className={s.meta}>
-            <div className={s.metaItem}>
-              <span className={s.metaLabel}>התחלה</span>
-              <span className={s.metaValue}>{formatTime(o.startedAt)}</span>
-            </div>
-            {o.startedAt && (
-              <div className={s.metaItem}>
-                <span className={s.metaLabel}>זמן</span>
-                <span className={s.metaValue}>{elapsed(o.startedAt)}</span>
-              </div>
-            )}
-            {o.missing > 0 && (
-              <div className={s.metaItem}>
-                <span className={s.metaLabel}>חסרים</span>
-                <span className={`${s.metaValue} ${s.missing}`}>{o.missing}</span>
-              </div>
-            )}
+        )}
+        {o.missing > 0 && (
+          <div className={s.metaItem}>
+            <span className={s.metaLabel}>חסרים</span>
+            <span className={`${s.metaValue} ${s.missing}`}>{o.missing}</span>
           </div>
-        </>
+        )}
+      </div>
+
+      {disabled && (
+        <p className={s.queueHint}>ממתין — סיימו הזמנה קודמת</p>
       )}
     </div>
   )

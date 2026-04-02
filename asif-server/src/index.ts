@@ -1,7 +1,16 @@
+import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
 
-dotenv.config({ path: path.join(__dirname, '..', '.env') })
+// Resolve `asif-server/.env` from this file (works for `ts-node src/index.ts` and `node dist/index.js`).
+const pkgRoot = path.join(__dirname, '..')
+const pkgEnv = path.join(pkgRoot, '.env')
+dotenv.config({ path: pkgEnv, override: true })
+// If the server is started from the monorepo root, also merge `asif-server/.env` when cwd differs.
+const cwdAsifEnv = path.join(process.cwd(), 'asif-server', '.env')
+if (fs.existsSync(cwdAsifEnv) && path.resolve(cwdAsifEnv) !== path.resolve(pkgEnv)) {
+  dotenv.config({ path: cwdAsifEnv, override: true })
+}
 
 import express from 'express'
 import cors from 'cors'
@@ -10,6 +19,7 @@ import { requireFirebaseAdmin } from './middleware/adminAuth'
 import authRouter from './routes/auth'
 import adminRouter from './routes/admin'
 import ordersRouter from './routes/orders'
+import shiftsRouter from './routes/shifts'
 import dashboardRouter from './routes/dashboard'
 import woocommerceRouter from './routes/woocommerce'
 
@@ -68,6 +78,7 @@ app.get('/', (_req, res) => {
 
 app.use('/auth', authRouter)
 app.use('/orders', ordersRouter)
+app.use('/shifts', shiftsRouter)
 
 // More specific path first — otherwise `/admin` would swallow `/admin/woocommerce/*`.
 app.use('/admin/woocommerce', requireFirebaseAdmin, woocommerceRouter)
