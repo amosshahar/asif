@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import logo from '../assets/logo.png'
+const logo = '/logo.png'
 import { login } from '../api'
 import { saveUser } from '../auth'
 import type { AuthUser } from '../api'

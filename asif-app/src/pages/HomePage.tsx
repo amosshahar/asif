@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import type { AuthUser, Order } from '../api'
 import { getMyOrder, startOrder } from '../api'
 import { clearUser } from '../auth'
-import logo from '../assets/logo.png'
+const logo = '/logo.png'
 import s from './HomePage.module.css'
 
 interface Props {
