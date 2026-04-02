@@ -9,7 +9,7 @@ import CollectorStatsPage from './pages/CollectorStatsPage'
 import LoginPage from './pages/LoginPage'
 import s from './App.module.css'
 
-type Page = 'dashboard' | 'orders' | 'users'
+type Page = 'dashboard' | 'stats' | 'orders' | 'users'
 
 export default function App() {
   const { user, loading, logout } = useAuth()
