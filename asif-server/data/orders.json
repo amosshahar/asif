@@ -2,9 +2,9 @@
   {
     "id": "ORD-001",
     "customerName": "דנה",
-    "status": "assigned",
+    "status": "in_progress",
     "assignedTo": "001",
-    "startedAt": null,
+    "startedAt": "2026-04-02T15:59:38.344Z",
     "completedAt": null,
     "items": [
       {
@@ -16,12 +16,15 @@
         "unit": "piece",
         "barcode": "7290000001111",
         "imageUrl": "",
-        "location": { "aisle": 1, "label": "מעבר 1 — אפייה" },
+        "location": {
+          "aisle": 1,
+          "label": "מעבר 1 — אפייה"
+        },
         "customerNote": "",
-        "status": "pending",
-        "collectedQuantity": null,
+        "status": "collected",
+        "collectedQuantity": 2,
         "collectedWeight": null,
-        "collectionMethod": null
+        "collectionMethod": "manual"
       },
       {
         "id": "item-2",
@@ -32,12 +35,16 @@
         "unit": "kg",
         "barcode": "",
         "imageUrl": "",
-        "location": { "aisle": 2, "label": "מעבר 2 — ירקות ופירות" },
+        "location": {
+          "aisle": 2,
+          "label": "מעבר 2 — ירקות ופירות"
+        },
         "customerNote": "בבקשה עגבניות בשלות אבל לא רכות מדי",
-        "status": "pending",
+        "status": "missing",
         "collectedQuantity": null,
         "collectedWeight": null,
-        "collectionMethod": null
+        "collectionMethod": null,
+        "missingReason": "אזל מהמלאי"
       },
       {
         "id": "item-3",
@@ -48,7 +55,10 @@
         "unit": "kg",
         "barcode": "",
         "imageUrl": "",
-        "location": { "aisle": 2, "label": "מעבר 2 — ירקות ופירות" },
+        "location": {
+          "aisle": 2,
+          "label": "מעבר 2 — ירקות ופירות"
+        },
         "customerNote": "להביא ירוקות, לא צהובות",
         "status": "pending",
         "collectedQuantity": null,
@@ -64,7 +74,10 @@
         "unit": "piece",
         "barcode": "7290000002222",
         "imageUrl": "",
-        "location": { "aisle": 5, "label": "מעבר 5 — מוצרי חלב" },
+        "location": {
+          "aisle": 5,
+          "label": "מעבר 5 — מוצרי חלב"
+        },
         "customerNote": "",
         "status": "pending",
         "collectedQuantity": null,
@@ -80,7 +93,10 @@
         "unit": "piece",
         "barcode": "7290000003333",
         "imageUrl": "",
-        "location": { "aisle": 5, "label": "מעבר 5 — מוצרי חלב" },
+        "location": {
+          "aisle": 5,
+          "label": "מעבר 5 — מוצרי חלב"
+        },
         "customerNote": "",
         "status": "pending",
         "collectedQuantity": null,
@@ -96,7 +112,10 @@
         "unit": "piece",
         "barcode": "7290000004444",
         "imageUrl": "",
-        "location": { "aisle": 7, "label": "מעבר 7 — שמנים ורטבים" },
+        "location": {
+          "aisle": 7,
+          "label": "מעבר 7 — שמנים ורטבים"
+        },
         "customerNote": "",
         "status": "pending",
         "collectedQuantity": null,
@@ -112,7 +131,10 @@
         "unit": "piece",
         "barcode": "7290000005555",
         "imageUrl": "",
-        "location": { "aisle": 8, "label": "מעבר 8 — קפה ותה" },
+        "location": {
+          "aisle": 8,
+          "label": "מעבר 8 — קפה ותה"
+        },
         "customerNote": "רק קלאסיק, לא גולד",
         "status": "pending",
         "collectedQuantity": null,

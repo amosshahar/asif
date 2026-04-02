@@ -4,6 +4,7 @@ import { updateItem, completeOrder } from '../api'
 import { scanBarcode } from '../scanner'
 import MissingModal from '../components/MissingModal'
 import MismatchModal from '../components/MismatchModal'
+import WeightModal from '../components/WeightModal'
 import s from './PickListPage.module.css'
 
 interface Props {
@@ -28,7 +29,8 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
   const [items, setItems]             = useState<OrderItem[]>(order.items)
   const [missingItem, setMissingItem] = useState<OrderItem | null>(null)
   const [mismatch, setMismatch]       = useState<{ item: OrderItem; scanned: string } | null>(null)
-  const [scanning, setScanning]       = useState<string | null>(null) // itemId being scanned
+  const [scanning, setScanning]       = useState<string | null>(null)
+  const [weightItem, setWeightItem]   = useState<OrderItem | null>(null)
   const [completing, setCompleting]   = useState(false)
 
   const collected = items.filter(i => i.status !== 'pending').length
@@ -57,13 +59,19 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
     await markCollected(item, 'scan')
   }
 
-  async function markCollected(item: OrderItem, method: 'scan' | 'manual') {
+  async function markCollected(item: OrderItem, method: 'scan' | 'manual' | 'scale', weight?: number) {
     const updated = await updateItem(order.id, item.id, {
       status: 'collected',
       collectedQuantity: item.quantity,
+      collectedWeight: weight ?? null,
       collectionMethod: method,
     })
     setItems(prev => prev.map(i => i.id === updated.id ? updated : i))
+  }
+
+  async function handleWeightConfirm(item: OrderItem, weight: number) {
+    setWeightItem(null)
+    await markCollected(item, 'scale', weight)
   }
 
   async function markMissing(item: OrderItem, reason: string) {
@@ -124,7 +132,7 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
                 item={item}
                 scanning={scanning === item.id}
                 onScan={() => handleScan(item)}
-                onCollect={() => markCollected(item, 'manual')}
+                onCollect={() => item.unit !== 'piece' ? setWeightItem(item) : markCollected(item, 'manual')}
                 onMissing={() => setMissingItem(item)}
                 onUndo={() => undoItem(item)}
               />
@@ -146,6 +154,16 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
           itemName={missingItem.name}
           onConfirm={reason => markMissing(missingItem, reason)}
           onClose={() => setMissingItem(null)}
+        />
+      )}
+
+      {weightItem && (
+        <WeightModal
+          itemName={weightItem.name}
+          targetQty={weightItem.quantity}
+          unit={weightItem.unit as 'kg' | 'g'}
+          onConfirm={w => handleWeightConfirm(weightItem, w)}
+          onClose={() => setWeightItem(null)}
         />
       )}
 

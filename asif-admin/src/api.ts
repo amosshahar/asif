@@ -26,3 +26,19 @@ export const updateUser = (id: string, payload: Partial<UserPayload>) =>
 
 export const deleteUser = (id: string) =>
   api.delete(`/admin/users/${id}`)
+
+export interface DashboardRow {
+  collectorId: string
+  collectorName: string
+  order: {
+    id: string
+    status: 'assigned' | 'in_progress' | 'completed'
+    startedAt: string | null
+    total: number
+    collected: number
+    missing: number
+  } | null
+}
+
+export const getDashboard = () =>
+  api.get<DashboardRow[]>('/dashboard').then(r => r.data)
