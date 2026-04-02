@@ -14,8 +14,9 @@ router.get('/my', (req: Request, res: Response) => {
 
 // POST /orders/:id/start
 router.post('/:id/start', (req: Request, res: Response) => {
+  const id = req.params['id'] as string
   const orders = readOrders()
-  const idx = orders.findIndex(o => o.id === req.params.id)
+  const idx = orders.findIndex(o => o.id === id)
   if (idx === -1) { res.status(404).json({ error: 'Order not found' }); return }
   orders[idx].status = 'in_progress'
   orders[idx].startedAt = new Date().toISOString()
@@ -25,18 +26,20 @@ router.post('/:id/start', (req: Request, res: Response) => {
 
 // PATCH /orders/:id/items/:itemId — update item status
 router.patch('/:id/items/:itemId', (req: Request, res: Response) => {
+  const id     = req.params['id'] as string
+  const itemId = req.params['itemId'] as string
   const orders = readOrders()
-  const order = orders.find(o => o.id === req.params.id)
+  const order = orders.find(o => o.id === id)
   if (!order) { res.status(404).json({ error: 'Order not found' }); return }
-  const item = order.items.find(i => i.id === req.params.itemId)
+  const item = order.items.find(i => i.id === itemId)
   if (!item) { res.status(404).json({ error: 'Item not found' }); return }
 
   const { status, collectedQuantity, collectedWeight, collectionMethod, missingReason } = req.body
-  if (status)            item.status           = status
-  if (collectedQuantity != null) item.collectedQuantity = collectedQuantity
-  if (collectedWeight   != null) item.collectedWeight   = collectedWeight
-  if (collectionMethod)  item.collectionMethod = collectionMethod
-  if (missingReason)     item.missingReason    = missingReason
+  if (status)                      item.status           = status
+  if (collectedQuantity != null)   item.collectedQuantity = collectedQuantity
+  if (collectedWeight   != null)   item.collectedWeight   = collectedWeight
+  if (collectionMethod)            item.collectionMethod = collectionMethod
+  if (missingReason)               item.missingReason    = missingReason
 
   writeOrders(orders)
   res.json(item)
@@ -44,8 +47,9 @@ router.patch('/:id/items/:itemId', (req: Request, res: Response) => {
 
 // POST /orders/:id/complete
 router.post('/:id/complete', (req: Request, res: Response) => {
+  const id = req.params['id'] as string
   const orders = readOrders()
-  const idx = orders.findIndex(o => o.id === req.params.id)
+  const idx = orders.findIndex(o => o.id === id)
   if (idx === -1) { res.status(404).json({ error: 'Order not found' }); return }
   orders[idx].status = 'completed'
   orders[idx].completedAt = new Date().toISOString()
@@ -60,7 +64,8 @@ router.get('/', (_req: Request, res: Response) => {
 
 // GET /orders/:id
 router.get('/:id', (req: Request, res: Response) => {
-  const order = findOrder(req.params.id)
+  const id = req.params['id'] as string
+  const order = findOrder(id)
   if (!order) { res.status(404).json({ error: 'Order not found' }); return }
   res.json(order)
 })
