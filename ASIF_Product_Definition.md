@@ -206,18 +206,55 @@ iPhone App (React + Capacitor)
     │
     ├── @capacitor-community/bluetooth-le  → BLE Scale
     ├── @capacitor-mlkit/barcode-scanning  → Barcode Scanner
-    └── REST / WebSocket                   → Backend API
+    └── HTTPS → asif-api.tulidu.com (CloudFront) → EC2 :3002
 
-Backend (Node.js + TypeScript)
+Backend (Node.js + TypeScript) — EC2, PM2 process asif-server, port 3002
     │
-    ├── Orders DB         — order + item data (PostgreSQL)
-    ├── Product Catalog   — barcodes, images, pricing, weight flags
-    ├── Store Layout DB   — aisle/section/shelf map for route ordering
-    ├── WebSocket         — live updates to manager dashboard
-    └── ERP Integration   — outbound webhook/REST on order submission
+    ├── data/users.json   — collector accounts (MVP; Firebase Auth in Phase 2)
+    ├── data/orders.json  — orders + item state (MVP; real Orders DB TBD)
+    ├── /auth/login       — PIN authentication
+    ├── /orders/*         — order assignment, item updates, completion
+    ├── /admin/users      — collector management
+    ├── /dashboard        — live manager view
+    └── ERP Integration   — outbound webhook/REST on order submission (TBD)
 
-Manager Dashboard
-    └── React (web) — reads from backend via REST + WebSocket
+Manager Dashboard (React + Vite) — S3 + CloudFront, asif.tulidu.com
+```
+
+### Deployed Infrastructure
+
+| Resource | Value |
+|---|---|
+| API URL | `https://asif-api.tulidu.com` |
+| Admin URL | `https://asif.tulidu.com` |
+| EC2 instance | `ec2-3-92-164-103.compute-1.amazonaws.com` |
+| API CloudFront | `EL5YSKDH45CFX` → EC2 port 3002 |
+| Admin CloudFront | `E1KCKLWQAC76IU` → S3 `asif-admin-frontend` |
+| ACM Certificate | `*.tulidu.com` (covers both subdomains) |
+| PM2 process | `asif-server` (alongside `tulidu-sport-server`) |
+
+### Deploy Commands
+
+```bash
+./deploy/deploy-server.sh   # deploy API to EC2
+./deploy/deploy-admin.sh    # deploy admin UI to S3 + invalidate CF
+```
+
+### iPhone App — switching between local and prod
+
+**Local dev** (`asif-app/.env.local`):
+```
+VITE_API_URL=http://localhost:3002
+```
+
+**Real device on local network** (`asif-app/.env.local`):
+```
+VITE_API_URL=http://192.168.x.x:3002
+```
+
+**Production build** (set in `deploy/.env`, applied by `deploy-admin.sh`):
+```
+VITE_API_URL=https://asif-api.tulidu.com
 ```
 
 ---
