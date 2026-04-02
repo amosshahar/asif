@@ -5,7 +5,7 @@ const api = axios.create({ baseURL: import.meta.env.VITE_API_URL ?? 'http://loca
 export interface AuthUser {
   id: string
   name: string
-  role: 'collector' | 'manager'
+  role: 'collector' | 'manager' | 'customer_service'
 }
 
 export interface OrderItem {
@@ -29,11 +29,14 @@ export interface OrderItem {
 export interface Order {
   id: string
   customerName: string
-  status: 'assigned' | 'in_progress' | 'completed'
+  status: 'queued' | 'assigned' | 'in_progress' | 'completed'
   assignedTo: string | null
   startedAt: string | null
   completedAt: string | null
   items: OrderItem[]
+  wcOrderId?: number
+  wcStatus?: string
+  syncedAt?: string
 }
 
 export const login = (id: string, pin: string) =>

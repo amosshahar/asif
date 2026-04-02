@@ -1,0 +1,54 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: env(safe-area-inset-top) 16px 12px;
+  min-height: calc(56px + env(safe-area-inset-top));
+}
+
+.logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+
+.logoutBtn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.body {
+  padding: 24px 20px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.greeting {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+
+.role {
+  font-size: 14px;
+  color: var(--color-muted, #666);
+  margin: 0 0 16px;
+}
+
+.msg {
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}

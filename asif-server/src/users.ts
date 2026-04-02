@@ -1,17 +1,18 @@
-import fs from 'fs'
-import path from 'path'
-import { User } from './types'
+import type { User } from './types'
+import { getUserPersistence } from './persistence/userPersistence'
 
-const FILE = path.join(__dirname, '../data/users.json')
-
-export function readUsers(): User[] {
-  return JSON.parse(fs.readFileSync(FILE, 'utf-8'))
+export async function readUsers(): Promise<User[]> {
+  return getUserPersistence().list()
 }
 
-export function writeUsers(users: User[]): void {
-  fs.writeFileSync(FILE, JSON.stringify(users, null, 2), 'utf-8')
+export async function findUser(id: string): Promise<User | undefined> {
+  return getUserPersistence().get(id)
 }
 
-export function findUser(id: string): User | undefined {
-  return readUsers().find(u => u.id === id)
+export async function saveUser(user: User): Promise<void> {
+  return getUserPersistence().put(user)
+}
+
+export async function deleteUserById(id: string): Promise<void> {
+  return getUserPersistence().delete(id)
 }

@@ -217,5 +217,6 @@ VITE_API_URL=http://192.168.x.x:3002
 
 For production build (handled automatically by `deploy-admin.sh`):
 ```
-VITE_API_URL=https://api.asif.tulidu.com
+VITE_API_URL=https://asif-api.tulidu.com
 ```
+(If you use `https://api.asif.tulidu.com`, that hostname must exist in Route53 — currently the live API is `asif-api.tulidu.com` per product doc.)

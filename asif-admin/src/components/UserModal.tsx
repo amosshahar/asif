@@ -12,7 +12,9 @@ export default function UserModal({ user, onSave, onClose }: Props) {
   const [id, setId]     = useState(user?.id   ?? '')
   const [name, setName] = useState(user?.name ?? '')
   const [pin, setPin]   = useState('')
-  const [role, setRole] = useState<'collector' | 'manager'>(user?.role ?? 'collector')
+  const [role, setRole] = useState<'collector' | 'manager' | 'customer_service'>(
+    user?.role ?? 'collector'
+  )
 
   const isEdit = !!user
 
@@ -73,9 +75,15 @@ export default function UserModal({ user, onSave, onClose }: Props) {
 
           <label>
             תפקיד
-            <select value={role} onChange={e => setRole(e.target.value as 'collector' | 'manager')}>
+            <select
+              value={role}
+              onChange={e =>
+                setRole(e.target.value as 'collector' | 'manager' | 'customer_service')
+              }
+            >
               <option value="collector">ליקוטן</option>
               <option value="manager">מנהל</option>
+              <option value="customer_service">שירות לקוחות</option>
             </select>
           </label>
 

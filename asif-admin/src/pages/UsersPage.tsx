@@ -7,6 +7,7 @@ import s from './UsersPage.module.css'
 const ROLE_LABEL: Record<string, string> = {
   collector: 'ליקוטן',
   manager: 'מנהל',
+  customer_service: 'שירות לקוחות',
 }
 
 export default function UsersPage() {

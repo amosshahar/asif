@@ -5,6 +5,7 @@ import type { AuthUser, Order } from './api'
 import LoginPage from './pages/LoginPage'
 import HomePage from './pages/HomePage'
 import PickListPage from './pages/PickListPage'
+import WebOnlyRolePage from './pages/WebOnlyRolePage'
 
 type Screen = 'login' | 'home' | 'picklist'
 
@@ -25,6 +26,15 @@ export default function App() {
 
   if (screen === 'login' || !user) {
     return <LoginPage onLogin={u => { setUser(u); setScreen('home') }} />
+  }
+
+  if (user.role === 'manager' || user.role === 'customer_service') {
+    return (
+      <WebOnlyRolePage
+        user={user}
+        onLogout={() => { setUser(null); setOrder(null); setScreen('login') }}
+      />
+    )
   }
 
   if (screen === 'picklist' && order) {

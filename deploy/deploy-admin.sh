@@ -12,7 +12,7 @@ source "$ENV_FILE"
 
 BUCKET="${ADMIN_S3_BUCKET:-asif-admin-frontend}"
 CF_ID="${ADMIN_CF_ID}"
-API_URL="${VITE_API_URL:-https://api.asif.tulidu.com}"
+API_URL="${VITE_API_URL:-https://asif-api.tulidu.com}"
 
 echo "▶ Building asif-admin with API_URL=$API_URL ..."
 cd "$SCRIPT_DIR/../asif-admin"

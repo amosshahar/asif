@@ -53,6 +53,16 @@
 }
 
 /* ── Progress ── */
+.scanError {
+  margin: 0 16px 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #b71c1c;
+  background: #ffebee;
+  border-radius: 8px;
+}
+
 .progressBar {
   height: 5px;
   background: rgba(0,48,135,0.15);

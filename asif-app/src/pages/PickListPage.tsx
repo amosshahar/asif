@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CapacitorException, ExceptionCode } from '@capacitor/core'
 import type { Order, OrderItem } from '../api'
 import { updateItem, completeOrder } from '../api'
 import { scanBarcode } from '../scanner'
@@ -6,6 +7,24 @@ import MissingModal from '../components/MissingModal'
 import MismatchModal from '../components/MismatchModal'
 import WeightModal from '../components/WeightModal'
 import s from './PickListPage.module.css'
+
+function scanFailureToHebrew(e: unknown): string {
+  if (e instanceof CapacitorException && e.code === ExceptionCode.Unimplemented) {
+    return 'הסריקה לא מקושרת לאפליקציה (בנייה ללא CocoaPods). פתח את App.xcworkspace והרץ pod install.'
+  }
+  if (
+    e &&
+    typeof e === 'object' &&
+    'code' in e &&
+    (e as { code?: string }).code === 'CAMERA_PERMISSION_DENIED'
+  ) {
+    return 'נדרש אישור גישה למצלמה בהגדרות המכשיר.'
+  }
+  if (e instanceof Error && e.message) {
+    return `שגיאת סריקה: ${e.message}`
+  }
+  return 'שגיאת סריקה — נסה שוב.'
+}
 
 interface Props {
   order: Order
@@ -30,6 +49,7 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
   const [missingItem, setMissingItem] = useState<OrderItem | null>(null)
   const [mismatch, setMismatch]       = useState<{ item: OrderItem; scanned: string } | null>(null)
   const [scanning, setScanning]       = useState<string | null>(null)
+  const [scanError, setScanError]     = useState('')
   const [weightItem, setWeightItem]   = useState<OrderItem | null>(null)
   const [completing, setCompleting]   = useState(false)
 
@@ -41,14 +61,18 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
 
   async function handleScan(item: OrderItem) {
     setScanning(item.id)
+    setScanError('')
     try {
       const scanned = await scanBarcode()
-      if (!scanned) return                          // user cancelled
+      if (!scanned) return // user closed scanner without a read
       if (!item.barcode || scanned === item.barcode) {
         await markCollected(item, 'scan')           // match (or no barcode on file)
       } else {
         setMismatch({ item, scanned })              // mismatch → show modal
       }
+    } catch (e) {
+      console.error('[ASIF scan]', e)
+      setScanError(scanFailureToHebrew(e))
     } finally {
       setScanning(null)
     }
@@ -121,6 +145,8 @@ export default function PickListPage({ order, onOrderComplete, onBack }: Props) 
       <div className={s.progressBar}>
         <div className={s.progressFill} style={{ width: `${(collected / total) * 100}%` }} />
       </div>
+
+      {scanError ? <p className={s.scanError}>{scanError}</p> : null}
 
       <div className={s.list}>
         {groups.map(group => (

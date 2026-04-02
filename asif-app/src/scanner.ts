@@ -10,7 +10,11 @@ export async function requestCameraPermission(): Promise<boolean> {
 
 export async function scanBarcode(): Promise<string | null> {
   const granted = await requestCameraPermission()
-  if (!granted) return null
+  if (!granted) {
+    const err = new Error('CAMERA_PERMISSION_DENIED')
+    ;(err as Error & { code?: string }).code = 'CAMERA_PERMISSION_DENIED'
+    throw err
+  }
 
   const { barcodes } = await BarcodeScanner.scan({
     formats: [

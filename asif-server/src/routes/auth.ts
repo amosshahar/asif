@@ -4,17 +4,18 @@ import { findUser } from '../users'
 const router = Router()
 
 // POST /auth/login
-router.post('/login', (req: Request, res: Response) => {
-  const { id, pin } = req.body
+router.post('/login', async (req: Request, res: Response) => {
+  const id = typeof req.body?.id === 'string' ? req.body.id.trim() : String(req.body?.id ?? '').trim()
+  const pin = typeof req.body?.pin === 'string' ? req.body.pin.trim() : String(req.body?.pin ?? '').trim()
 
   if (!id || !pin) {
     res.status(400).json({ error: 'id and pin are required' })
     return
   }
 
-  const user = findUser(id)
+  const user = await findUser(id)
 
-  if (!user || user.pin !== pin) {
+  if (!user || String(user.pin) !== pin) {
     res.status(401).json({ error: 'Invalid credentials' })
     return
   }

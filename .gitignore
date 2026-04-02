@@ -9,8 +9,9 @@ build/
 asif-app/ios/
 asif-app/android/
 
-# Environment
+# Environment (never commit secrets — use *.example templates)
 .env
+**/.env
 .env.local
 .env.*.local
 

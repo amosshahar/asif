@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { isAxiosError } from 'axios'
 const logo = '/logo.png'
 import { login } from '../api'
 import { saveUser } from '../auth'
@@ -24,8 +25,19 @@ export default function LoginPage({ onLogin }: Props) {
       const user = await login(id.trim(), pin)
       await saveUser(user)
       onLogin(user)
-    } catch {
-      setError('מזהה עובד או PIN שגויים')
+    } catch (err) {
+      console.error('[ASIF login]', err)
+      if (isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          setError('מזהה עובד או PIN שגויים')
+        } else if (err.code === 'ERR_NETWORK' || !err.response) {
+          setError('לא ניתן להתחבר לשרת. בדוק אינטרנט או בנה מחדש עם כתובת API (לא localhost על מכשיר).')
+        } else {
+          setError(`שגיאת שרת (${err.response.status}). נסה שוב.`)
+        }
+      } else {
+        setError('מזהה עובד או PIN שגויים')
+      }
       setPin('')
     } finally {
       setLoading(false)

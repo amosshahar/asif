@@ -210,8 +210,7 @@ iPhone App (React + Capacitor)
 
 Backend (Node.js + TypeScript) — EC2, PM2 process asif-server, port 3002
     │
-    ├── data/users.json   — collector accounts (MVP; Firebase Auth in Phase 2)
-    ├── data/orders.json  — orders + item state (MVP; real Orders DB TBD)
+    ├── Firestore asif_users / asif_orders — collectors + picking state (see docs/ASIF-FIRESTORE-ENTITIES.md)
     ├── /auth/login       — PIN authentication
     ├── /orders/*         — order assignment, item updates, completion
     ├── /admin/users      — collector management

@@ -1,50 +1,24 @@
-import fs from 'fs'
-import path from 'path'
+export type { Order, OrderItem, OrderStatus } from './models/order'
+import type { Order } from './models/order'
+import { getOrderPersistence } from './persistence/orderPersistence'
 
-const FILE = path.join(__dirname, '../data/orders.json')
-
-export interface OrderItem {
-  id: string
-  sku: string
-  name: string
-  brand: string
-  quantity: number
-  unit: 'piece' | 'kg' | 'g'
-  barcode: string
-  imageUrl: string
-  location: { aisle: number; label: string }
-  customerNote: string
-  status: 'pending' | 'collected' | 'missing'
-  collectedQuantity: number | null
-  collectedWeight: number | null
-  collectionMethod: 'scan' | 'manual' | 'scale' | null
-  missingReason?: string
+export async function readOrders(): Promise<Order[]> {
+  return getOrderPersistence().list()
 }
 
-export interface Order {
-  id: string
-  customerName: string
-  status: 'assigned' | 'in_progress' | 'completed'
-  assignedTo: string | null
-  startedAt: string | null
-  completedAt: string | null
-  items: OrderItem[]
+export async function findOrder(id: string): Promise<Order | undefined> {
+  return getOrderPersistence().get(id)
 }
 
-export function readOrders(): Order[] {
-  return JSON.parse(fs.readFileSync(FILE, 'utf-8'))
+export async function saveOrder(order: Order): Promise<void> {
+  return getOrderPersistence().put(order)
 }
 
-export function writeOrders(orders: Order[]): void {
-  fs.writeFileSync(FILE, JSON.stringify(orders, null, 2), 'utf-8')
-}
-
-export function findOrder(id: string): Order | undefined {
-  return readOrders().find(o => o.id === id)
-}
-
-export function getAssignedOrder(collectorId: string): Order | undefined {
-  return readOrders().find(
-    o => o.assignedTo === collectorId && o.status !== 'completed'
+export async function getAssignedOrder(collectorId: string): Promise<Order | undefined> {
+  const orders = await readOrders()
+  return orders.find(
+    o =>
+      o.assignedTo === collectorId &&
+      (o.status === 'assigned' || o.status === 'in_progress')
   )
 }
