@@ -1,28 +1,26 @@
+import { useState, useEffect } from 'react'
 import './theme.css'
-import logo from './assets/logo.png'
+import { loadUser } from './auth'
+import type { AuthUser } from './api'
+import LoginPage from './pages/LoginPage'
+import HomePage from './pages/HomePage'
 
 export default function App() {
-  return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--color-bg)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '24px',
-    }}>
-      <img src={logo} alt="אסיף" style={{ width: 140 }} />
-      <h1 style={{
-        color: 'var(--color-primary)',
-        fontSize: '22px',
-        fontWeight: 700,
-      }}>
-        מערכת איסוף הזמנות
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
-        טוען...
-      </p>
-    </div>
-  )
+  const [user, setUser] = useState<AuthUser | null>(null)
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    loadUser().then(u => {
+      setUser(u)
+      setChecking(false)
+    })
+  }, [])
+
+  if (checking) return null
+
+  if (!user) {
+    return <LoginPage onLogin={setUser} />
+  }
+
+  return <HomePage user={user} onLogout={() => setUser(null)} />
 }
