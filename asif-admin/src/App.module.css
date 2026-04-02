@@ -1,0 +1,31 @@
+.shell {
+  min-height: 100vh;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.nav {
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 28px;
+  height: 56px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.logo {
+  height: 32px;
+}
+
+.navTitle {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.main {
+  flex: 1;
+}

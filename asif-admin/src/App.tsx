@@ -1,24 +1,18 @@
 import './theme.css'
-import logo from './assets/logo.png'
+import logo from './assets/logo-light.png'
+import UsersPage from './pages/UsersPage'
+import s from './App.module.css'
 
 export default function App() {
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--color-bg)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '16px',
-    }}>
-      <img src={logo} alt="אסיף" style={{ width: 120 }} />
-      <h1 style={{ color: 'var(--color-primary)', fontSize: '20px', fontWeight: 700 }}>
-        פאנל ניהול
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px' }}>
-        טוען...
-      </p>
+    <div className={s.shell}>
+      <header className={s.nav}>
+        <img src={logo} alt="אסיף" className={s.logo} />
+        <span className={s.navTitle}>פאנל ניהול</span>
+      </header>
+      <main className={s.main}>
+        <UsersPage />
+      </main>
     </div>
   )
 }
