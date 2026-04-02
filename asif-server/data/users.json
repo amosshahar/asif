@@ -1,0 +1,14 @@
+[
+  {
+    "id": "admin",
+    "name": "מנהל",
+    "pin": "0000",
+    "role": "manager"
+  },
+  {
+    "id": "001",
+    "name": "יוסי כהן",
+    "pin": "1234",
+    "role": "collector"
+  }
+]
