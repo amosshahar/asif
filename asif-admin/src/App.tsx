@@ -8,10 +8,11 @@ import DashboardPage from './pages/DashboardPage'
 import CollectorStatsPage from './pages/CollectorStatsPage'
 import ComaxLabPage from './pages/ComaxLabPage'
 import WcLabPage from './pages/WcLabPage'
+import DocsPage from './pages/DocsPage'
 import LoginPage from './pages/LoginPage'
 import s from './App.module.css'
 
-type Page = 'dashboard' | 'stats' | 'orders' | 'users' | 'comax' | 'wclab'
+type Page = 'dashboard' | 'stats' | 'orders' | 'users' | 'comax' | 'wclab' | 'docs'
 
 export default function App() {
   const { user, loading, logout } = useAuth()
@@ -59,6 +60,12 @@ export default function App() {
             סטטיסטיקות
           </button>
           <button
+            className={`${s.navBtn} ${page === 'docs' ? s.active : ''}`}
+            onClick={() => setPage('docs')}
+          >
+            מדריך
+          </button>
+          <button
             className={`${s.navBtn} ${page === 'comax' ? s.active : ''}`}
             onClick={() => setPage('comax')}
           >
@@ -86,6 +93,8 @@ export default function App() {
           <DashboardPage />
         ) : page === 'users' ? (
           <UsersPage />
+        ) : page === 'docs' ? (
+          <DocsPage />
         ) : page === 'comax' ? (
           <ComaxLabPage />
         ) : page === 'wclab' ? (

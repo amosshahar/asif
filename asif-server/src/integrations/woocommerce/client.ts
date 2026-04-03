@@ -108,3 +108,33 @@ export async function getWcOrderById(config: WooCommerceConfig, wcOrderId: numbe
     throw new WooCommerceHttpError('Invalid JSON from WooCommerce', res.status, text.slice(0, 500))
   }
 }
+
+/** PUT partial update (e.g. `{ status: 'completed' }`). See WC REST «Update an order». */
+export async function putWcOrder(
+  config: WooCommerceConfig,
+  wcOrderId: number,
+  body: Record<string, unknown>
+): Promise<WcOrder> {
+  const url = buildWcV3Url(config, `/orders/${wcOrderId}`, {})
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+  const text = await res.text()
+  if (!res.ok) {
+    throw new WooCommerceHttpError(
+      `WooCommerce API ${res.status}`,
+      res.status,
+      text.slice(0, 2000)
+    )
+  }
+  try {
+    return JSON.parse(text) as WcOrder
+  } catch {
+    throw new WooCommerceHttpError('Invalid JSON from WooCommerce', res.status, text.slice(0, 500))
+  }
+}

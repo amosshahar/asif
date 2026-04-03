@@ -228,6 +228,9 @@ function lineCustomerNote(line: WcLineItem): string {
   ).trim()
 }
 
+/** Classify line as piece vs weight sale. Today: line item meta only (`_weight`, `weight`, `_unit`).
+ * If pickers see wrong "שקול" / אסוף behavior, extend here (e.g. WC line `weight`, product sold-by-weight,
+ * or store-specific meta keys) — client only reads resulting `unit`. */
 function inferUnit(line: WcLineItem): 'piece' | 'kg' | 'g' {
   const w = lineMeta(line, '_weight') || lineMeta(line, 'weight')
   if (w && parseFloat(w) > 0) return 'kg'

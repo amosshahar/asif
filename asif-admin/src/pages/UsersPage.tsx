@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { getUsers, createUser, updateUser, deleteUser } from '../api'
 import type { User, UserPayload } from '../api'
 import UserModal from '../components/UserModal'
+import NotifyBar from '../components/NotifyBar'
+import ConfirmModal from '../components/ConfirmModal'
 import s from './UsersPage.module.css'
 
 const ROLE_LABEL: Record<string, string> = {
@@ -16,6 +18,8 @@ export default function UsersPage() {
   const [error, setError]       = useState('')
   const [modal, setModal]       = useState<'create' | User | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<User | null>(null)
+  const [toast, setToast] = useState<{ variant: 'error' | 'success'; text: string } | null>(null)
 
   const load = useCallback(async () => {
     try {
@@ -31,6 +35,12 @@ export default function UsersPage() {
 
   useEffect(() => { load() }, [load])
 
+  useEffect(() => {
+    if (!toast) return
+    const id = window.setTimeout(() => setToast(null), 8000)
+    return () => window.clearTimeout(id)
+  }, [toast])
+
   async function handleSave(payload: UserPayload) {
     const isEdit = modal !== 'create'
     try {
@@ -45,18 +55,21 @@ export default function UsersPage() {
       load()
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-      alert(msg ?? 'שגיאה בשמירה')
+      setToast({ variant: 'error', text: msg ?? 'שגיאה בשמירה' })
     }
   }
 
-  async function handleDelete(user: User) {
-    if (!confirm(`למחוק את ${user.name}?`)) return
+  async function confirmDeleteUser() {
+    const user = deleteConfirm
+    if (!user) return
     setDeleting(user.id)
     try {
       await deleteUser(user.id)
-      load()
+      setDeleteConfirm(null)
+      setToast({ variant: 'success', text: `המשתמש ${user.name} נמחק.` })
+      await load()
     } catch {
-      alert('שגיאה במחיקה')
+      setToast({ variant: 'error', text: 'שגיאה במחיקה' })
     } finally {
       setDeleting(null)
     }
@@ -64,6 +77,13 @@ export default function UsersPage() {
 
   return (
     <div className={s.page}>
+      {toast && (
+        <NotifyBar
+          variant={toast.variant}
+          message={toast.text}
+          onDismiss={() => setToast(null)}
+        />
+      )}
       <div className={s.header}>
         <div>
           <h1 className={s.title}>ניהול משתמשים</h1>
@@ -108,7 +128,7 @@ export default function UsersPage() {
                     </button>
                     <button
                       className={s.deleteBtn}
-                      onClick={() => handleDelete(u)}
+                      onClick={() => setDeleteConfirm(u)}
                       disabled={deleting === u.id}
                     >
                       {deleting === u.id ? '...' : 'מחיקה'}
@@ -119,6 +139,22 @@ export default function UsersPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {deleteConfirm && (
+        <ConfirmModal
+          title="מחיקת משתמש"
+          message={`למחוק את ${deleteConfirm.name} (מזהה: ${deleteConfirm.id})? פעולה זו אינה הפיכה.`}
+          confirmLabel="מחק"
+          cancelLabel="ביטול"
+          confirmVariant="danger"
+          busy={deleting === deleteConfirm.id}
+          onCancel={() => {
+            if (deleting === deleteConfirm.id) return
+            setDeleteConfirm(null)
+          }}
+          onConfirm={() => void confirmDeleteUser()}
+        />
       )}
 
       {modal && (

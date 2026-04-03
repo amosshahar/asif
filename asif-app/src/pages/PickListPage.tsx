@@ -145,6 +145,7 @@ export default function PickListPage({ order, onOrderComplete, onOrderUpdated, o
       if (!scanned) return // user closed scanner without a read
       const expected = expectedCode(item)
       if (!expected || scanned === expected) {
+        // Weighed lines: scan completes without entering weight today; future: force scale / modal if needed.
         await markCollected(item, 'scan')
       } else {
         setMismatch({ item, scanned, expected })
@@ -407,6 +408,9 @@ interface CardProps {
 }
 
 function ItemCard({ item, scanning, onScan, onWeight, onCollect, onMissing, onUndo }: CardProps) {
+  // Weighed vs piece: entirely driven by `item.unit` from the API (set at WC import).
+  // Future tweaks (if product requires): e.g. require scale weight even when using סרוק,
+  // extra flags from server, or client-side overrides — keep this as the single gate.
   const isWeighed   = item.unit !== 'piece'
   const isDone      = item.status !== 'pending'
   const isMissing   = item.status === 'missing'

@@ -2,9 +2,11 @@ import { Router, Request, Response } from 'express'
 import { readUsers, findUser, saveUser, deleteUserById } from '../users'
 import { User, type Role } from '../types'
 import { readOrders, findOrder, saveOrder } from '../orders'
+import type { Order } from '../models/order'
 import { computeCollectorStats, parseStatsRange } from '../collectorStats'
 import type { AdminAuthedRequest } from '../middleware/adminAuth'
 import { loadWooCommerceConfig } from '../integrations/woocommerce/config'
+import { getWcOrderById, putWcOrder, WooCommerceHttpError } from '../integrations/woocommerce/client'
 import { kickWooCommerceFullSyncInBackground } from '../wcFullSync'
 
 const router = Router()
@@ -67,6 +69,100 @@ router.post('/orders/:id/assign', async (req: Request, res: Response) => {
   if (order.status === 'queued') {
     order.status = 'assigned'
   }
+  await saveOrder(order)
+  res.json(order)
+})
+
+/** Apply latest WC `status` (+ syncedAt) to a Firestore order after a GET. */
+async function refreshOrderWcStatusFromRemote(orderId: string): Promise<Order | undefined> {
+  const config = loadWooCommerceConfig()
+  if (!config) return undefined
+  const order = await findOrder(orderId)
+  if (!order?.wcOrderId) return undefined
+  const wc = await getWcOrderById(config, order.wcOrderId)
+  order.wcStatus = wc.status
+  order.syncedAt = new Date().toISOString()
+  await saveOrder(order)
+  return order
+}
+
+// POST /admin/orders/:id/wc/refresh — GET order from WooCommerce; update wcStatus + syncedAt only
+router.post('/orders/:id/wc/refresh', async (req: Request, res: Response) => {
+  const id = req.params['id'] as string
+  if (!loadWooCommerceConfig()) {
+    res.status(503).json({ error: 'WooCommerce is not configured' })
+    return
+  }
+  const order = await findOrder(id)
+  if (!order) {
+    res.status(404).json({ error: 'Order not found' })
+    return
+  }
+  if (order.wcOrderId == null) {
+    res.status(400).json({ error: 'Order has no wcOrderId' })
+    return
+  }
+  try {
+    const updated = await refreshOrderWcStatusFromRemote(id)
+    if (!updated) {
+      res.status(500).json({ error: 'Failed to refresh order' })
+      return
+    }
+    res.json(updated)
+  } catch (e) {
+    const msg = e instanceof WooCommerceHttpError ? e.message : String(e)
+    res.status(502).json({ error: `WooCommerce: ${msg}` })
+  }
+})
+
+// POST /admin/orders/:id/wc/complete — ASIF must be completed; set WC status to completed, then refresh wcStatus from WC
+router.post('/orders/:id/wc/complete', async (req: Request, res: Response) => {
+  const id = req.params['id'] as string
+  const config = loadWooCommerceConfig()
+  if (!config) {
+    res.status(503).json({ error: 'WooCommerce is not configured' })
+    return
+  }
+  const order = await findOrder(id)
+  if (!order) {
+    res.status(404).json({ error: 'Order not found' })
+    return
+  }
+  if (order.status !== 'completed') {
+    res.status(400).json({ error: 'ASIF order must be in completed status first' })
+    return
+  }
+  if (order.wcOrderId == null) {
+    res.status(400).json({ error: 'Order has no wcOrderId' })
+    return
+  }
+  try {
+    await putWcOrder(config, order.wcOrderId, { status: 'completed' })
+    const updated = await refreshOrderWcStatusFromRemote(id)
+    if (!updated) {
+      res.status(500).json({ error: 'WC updated but failed to reload order' })
+      return
+    }
+    res.json(updated)
+  } catch (e) {
+    const msg = e instanceof WooCommerceHttpError ? e.message : String(e)
+    res.status(502).json({ error: `WooCommerce: ${msg}` })
+  }
+})
+
+// POST /admin/orders/:id/resolve-cs — waiting_cs → completed (admin / CS closure in ASIF; does not change WC)
+router.post('/orders/:id/resolve-cs', async (req: Request, res: Response) => {
+  const id = req.params['id'] as string
+  const order = await findOrder(id)
+  if (!order) {
+    res.status(404).json({ error: 'Order not found' })
+    return
+  }
+  if (order.status !== 'waiting_cs') {
+    res.status(400).json({ error: 'Order is not in waiting_cs status' })
+    return
+  }
+  order.status = 'completed'
   await saveOrder(order)
   res.json(order)
 })

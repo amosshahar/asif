@@ -1,10 +1,15 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import NotifyBar from '../components/NotifyBar'
+import ConfirmModal from '../components/ConfirmModal'
 import {
   getOrders,
   getUsers,
   assignOrder,
   getWooCommerceAdminStatus,
   syncWooCommerceOrders,
+  refreshOrderWcStatus,
+  completeWooCommerceOrder,
+  resolveOrderCustomerService,
 } from '../api'
 import type { WcSyncOnLoad } from '../api'
 import type { Order, User } from '../api'
@@ -28,7 +33,31 @@ const STATUS_CLASS: Record<Order['status'], string> = {
 
 type StatusFilter = 'all' | Order['status']
 
-type SortKey = 'wc' | 'customer' | 'status' | 'items' | 'collector' | 'started' | 'completed'
+type SortKey =
+  | 'wc'
+  | 'wcStatus'
+  | 'customer'
+  | 'status'
+  | 'items'
+  | 'collector'
+  | 'started'
+  | 'completed'
+
+/** Common WC core slugs — fallback to raw slug in UI. */
+const WC_STATUS_LABEL_HE: Record<string, string> = {
+  pending: 'ממתין לתשלום',
+  processing: 'בעיבוד',
+  'on-hold': 'בהשהיה',
+  completed: 'הושלם',
+  cancelled: 'בוטל',
+  refunded: 'הוחזר',
+  failed: 'נכשל',
+}
+
+function wcStatusDisplay(slug: string | undefined): string {
+  if (!slug || !slug.trim()) return '—'
+  return WC_STATUS_LABEL_HE[slug] ?? slug
+}
 
 const STATUS_SORT_ORDER: Record<Order['status'], number> = {
   queued: 0,
@@ -113,6 +142,9 @@ function sortOrdersList(
         else c = m * (na - nb)
         break
       }
+      case 'wcStatus':
+        c = compareTextHe((a.wcStatus ?? '').trim(), (b.wcStatus ?? '').trim(), m)
+        break
       case 'customer':
         c = compareTextHe((a.customerName ?? '').trim(), (b.customerName ?? '').trim(), m)
         break
@@ -172,6 +204,9 @@ export default function OrdersPage() {
   const [assignFor, setAssignFor] = useState<Order | null>(null)
   const [pickCollectorId, setPickCollectorId] = useState('')
   const [assigning, setAssigning] = useState(false)
+  const [orderActionId, setOrderActionId] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ variant: 'error' | 'success'; text: string } | null>(null)
+  const [resolveConfirmFor, setResolveConfirmFor] = useState<Order | null>(null)
   const [sortState, setSortState] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({
     key: 'wc',
     dir: 'desc',
@@ -231,6 +266,12 @@ export default function OrdersPage() {
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    if (!toast) return
+    const id = window.setTimeout(() => setToast(null), 8000)
+    return () => window.clearTimeout(id)
+  }, [toast])
 
   useEffect(() => {
     if (wcSync !== 'pending') {
@@ -311,7 +352,7 @@ export default function OrdersPage() {
       setPickCollectorId('')
       await load({ firestoreOnly: true })
     } catch (e) {
-      alert(axiosErrorMessage(e))
+      setToast({ variant: 'error', text: axiosErrorMessage(e) })
     } finally {
       setAssigning(false)
     }
@@ -320,6 +361,27 @@ export default function OrdersPage() {
   function openAssign(o: Order) {
     setAssignFor(o)
     setPickCollectorId(o.assignedTo && collectors.some((c) => c.id === o.assignedTo) ? o.assignedTo : '')
+  }
+
+  function patchOrderInList(next: Order) {
+    setOrders((prev) => prev.map((x) => (x.id === next.id ? next : x)))
+  }
+
+  async function runOrderAction(
+    orderId: string,
+    fn: () => Promise<Order>,
+    opts?: { successMsg?: string }
+  ) {
+    setOrderActionId(orderId)
+    try {
+      const updated = await fn()
+      patchOrderInList(updated)
+      if (opts?.successMsg) setToast({ variant: 'success', text: opts.successMsg })
+    } catch (e) {
+      setToast({ variant: 'error', text: axiosErrorMessage(e) })
+    } finally {
+      setOrderActionId(null)
+    }
   }
 
   const filterButtons: { key: StatusFilter; label: string }[] = [
@@ -333,6 +395,13 @@ export default function OrdersPage() {
 
   return (
     <div className={s.page}>
+      {toast && (
+        <NotifyBar
+          variant={toast.variant}
+          message={toast.text}
+          onDismiss={() => setToast(null)}
+        />
+      )}
       <div className={s.header}>
         <div>
           <h1 className={s.title}>הזמנות</h1>
@@ -443,6 +512,15 @@ export default function OrdersPage() {
                     WC{sortIndicator('wc')}
                   </button>
                 </th>
+                <th scope="col" aria-sort={thAriaSort('wcStatus')}>
+                  <button
+                    type="button"
+                    className={s.thSortBtn}
+                    onClick={() => toggleSort('wcStatus')}
+                  >
+                    סטטוס WC{sortIndicator('wcStatus')}
+                  </button>
+                </th>
                 <th scope="col" aria-sort={thAriaSort('customer')}>
                   <button
                     type="button"
@@ -496,6 +574,11 @@ export default function OrdersPage() {
               {sortedOrders.map((o) => (
                 <tr key={o.id}>
                   <td>{o.wcOrderId ?? '—'}</td>
+                  <td>
+                    <span className={s.wcStatusSlug} title={o.wcStatus ?? ''}>
+                      {wcStatusDisplay(o.wcStatus)}
+                    </span>
+                  </td>
                   <td>{o.customerName || '—'}</td>
                   <td>
                     <span
@@ -512,21 +595,102 @@ export default function OrdersPage() {
                   </td>
                   <td>{fmtWhen(o.startedAt)}</td>
                   <td>{fmtWhen(o.completedAt)}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className={s.assignBtn}
-                      disabled={o.status === 'completed'}
-                      onClick={() => openAssign(o)}
-                    >
-                      {o.assignedTo ? 'הקצה מחדש' : 'הקצה'}
-                    </button>
+                  <td className={s.actionsCell}>
+                    <div className={s.actionStack}>
+                      <div className={s.actionRow}>
+                        <button
+                          type="button"
+                          className={s.assignBtn}
+                          disabled={o.status === 'completed'}
+                          onClick={() => openAssign(o)}
+                        >
+                          {o.assignedTo ? 'הקצה מחדש' : 'הקצה'}
+                        </button>
+                      </div>
+                      {o.status === 'waiting_cs' && (
+                        <div className={s.actionRow}>
+                          <button
+                            type="button"
+                            className={s.resolveCsBtn}
+                            disabled={orderActionId === o.id}
+                            title="סוגר את ההזמנה באסיף כהושלם (לא משנה סטטוס ב-WooCommerce)"
+                            onClick={() => setResolveConfirmFor(o)}
+                          >
+                            {orderActionId === o.id ? '…' : 'העבר להושלם'}
+                          </button>
+                        </div>
+                      )}
+                      {o.status === 'completed' && o.wcOrderId != null && (
+                        <div className={s.actionRow}>
+                          {o.wcStatus !== 'completed' ? (
+                            <button
+                              type="button"
+                              className={s.wcPrimaryBtn}
+                              disabled={orderActionId === o.id}
+                              title="מעדכן את ההזמנה ב-WooCommerce ל־completed ואז מושך סטטוס מחדש"
+                              onClick={() =>
+                                void runOrderAction(
+                                  o.id,
+                                  () => completeWooCommerceOrder(o.id),
+                                  {
+                                    successMsg:
+                                      'ההזמנה עודכנה ל-completed ב-WooCommerce והסטטוס נטען מחדש.',
+                                  }
+                                )
+                              }
+                            >
+                              {orderActionId === o.id ? '…' : 'סמן completed ב-WC'}
+                            </button>
+                          ) : (
+                            <span className={s.wcStatusSlug} title="סטטוס בחנות">
+                              WC כבר completed
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            className={s.wcSecondaryBtn}
+                            disabled={orderActionId === o.id}
+                            title="מושך סטטוס נוכחי מ-WooCommerce בלי לשנות אותו"
+                            onClick={() =>
+                              void runOrderAction(
+                                o.id,
+                                () => refreshOrderWcStatus(o.id),
+                                { successMsg: 'סטטוס WooCommerce עודכן מהחנות.' }
+                              )
+                            }
+                          >
+                            רענן סטטוס WC
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {resolveConfirmFor && (
+        <ConfirmModal
+          title="העברה ל«הושלם»"
+          message={`להעביר את ההזמנה מ«ממתין לשירות» ל«הושלם» באסיף? WooCommerce לא ישתנה.
+
+WC #${resolveConfirmFor.wcOrderId ?? '?'} · ${resolveConfirmFor.customerName || 'ללא שם'}`}
+          confirmLabel="העבר להושלם"
+          cancelLabel="ביטול"
+          confirmVariant="primary"
+          onCancel={() => setResolveConfirmFor(null)}
+          onConfirm={() => {
+            const ord = resolveConfirmFor
+            if (!ord) return
+            setResolveConfirmFor(null)
+            void runOrderAction(ord.id, () => resolveOrderCustomerService(ord.id), {
+              successMsg: 'ההזמנה הועברה לסטטוס «הושלם» באסיף.',
+            })
+          }}
+        />
       )}
 
       {assignFor && (

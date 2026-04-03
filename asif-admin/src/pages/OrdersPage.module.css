@@ -75,6 +75,95 @@
   cursor: not-allowed;
 }
 
+.actionsCell {
+  vertical-align: top;
+  min-width: 9rem;
+}
+
+.actionStack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.wcSecondaryBtn {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-primary);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 1px solid rgba(0, 102, 51, 0.35);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.wcSecondaryBtn:hover:not(:disabled) {
+  background: rgba(0, 102, 51, 0.06);
+}
+
+.wcSecondaryBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.wcPrimaryBtn {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-primary);
+  background: #1a5f3c;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.wcPrimaryBtn:hover:not(:disabled) {
+  background: #144a30;
+}
+
+.wcPrimaryBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.resolveCsBtn {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-primary);
+  background: #6b4c00;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.resolveCsBtn:hover:not(:disabled) {
+  background: #523a00;
+}
+
+.resolveCsBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.wcStatusSlug {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  direction: ltr;
+  unicode-bidi: plaintext;
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;

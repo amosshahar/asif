@@ -111,6 +111,8 @@ export interface Order {
   deliveryTimeTo?: string | null
   /** WC `date_created` — when the order was submitted. */
   wcDateCreated?: string | null
+  /** Last known WooCommerce order status slug (e.g. processing, completed). */
+  wcStatus?: string
   csHandoffReason?: string | null
   customerNote?: string | null
 }
@@ -152,6 +154,18 @@ export const getWooCommerceAdminStatus = () =>
 
 export const assignOrder = (orderId: string, collectorId: string) =>
   api.post<Order>(`/admin/orders/${orderId}/assign`, { collectorId }).then((r) => r.data)
+
+/** GET WC order and update `wcStatus` + `syncedAt` on the ASIF document. */
+export const refreshOrderWcStatus = (orderId: string) =>
+  api.post<Order>(`/admin/orders/${orderId}/wc/refresh`, {}).then((r) => r.data)
+
+/** After ASIF status is completed: set WC order to `completed`, then refresh `wcStatus` from WC. */
+export const completeWooCommerceOrder = (orderId: string) =>
+  api.post<Order>(`/admin/orders/${orderId}/wc/complete`, {}).then((r) => r.data)
+
+/** CS / admin: ASIF `waiting_cs` → `completed` (does not call WooCommerce). */
+export const resolveOrderCustomerService = (orderId: string) =>
+  api.post<Order>(`/admin/orders/${orderId}/resolve-cs`, {}).then((r) => r.data)
 
 export interface WooSyncResult {
   ok: boolean
