@@ -1,0 +1,315 @@
+.wrap {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 2rem;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.sub {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.45;
+}
+
+.warn {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  padding: 0.65rem 0.85rem;
+  background: var(--color-surface);
+  border: 1px solid rgba(0, 48, 135, 0.15);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.apiSection {
+  border: 1px solid rgba(0, 48, 135, 0.18);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.1rem 1.15rem;
+  background: var(--color-surface);
+}
+
+.sectionHeading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.apiMeta {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.35rem;
+  line-height: 1.4;
+}
+
+.paramHint {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.65rem;
+  line-height: 1.35;
+}
+
+.warnInline {
+  font-size: 0.78rem;
+  color: var(--color-warning);
+  margin: 0.35rem 0 0.5rem;
+}
+
+.labMetaTitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0.85rem 0 0.25rem;
+}
+
+.fieldset {
+  border: 1px solid rgba(0, 48, 135, 0.2);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem 1rem;
+  background: var(--color-surface);
+}
+
+.legend {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  padding: 0 0.35rem;
+}
+
+.row {
+  margin-top: 0.5rem;
+}
+
+.row:first-of-type {
+  margin-top: 0.35rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.2rem;
+}
+
+.input {
+  width: 100%;
+  max-width: 22rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+}
+
+.runBtn {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  padding: 0.55rem 1.25rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: var(--font-primary);
+  cursor: pointer;
+}
+
+.runBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 0.875rem;
+  margin: 0.75rem 0;
+}
+
+.blockTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.block {
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin-top: 0.75rem;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.blockOk {
+  border-color: rgba(2, 187, 112, 0.45);
+}
+
+.blockBad {
+  border-color: rgba(220, 38, 38, 0.4);
+}
+
+.note {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.url {
+  font-size: 0.72rem;
+  font-family: ui-monospace, monospace;
+  color: var(--color-text-secondary);
+  word-break: break-all;
+  margin-bottom: 0.5rem;
+}
+
+.pre {
+  font-size: 0.68rem;
+  line-height: 1.35;
+  font-family: ui-monospace, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 18rem;
+  overflow: auto;
+  padding: 0.6rem;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-sm);
+  direction: ltr;
+  text-align: left;
+}
+
+.btnRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.4rem 0 0.5rem;
+}
+
+.btnSecondary {
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 48, 135, 0.35);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-primary);
+}
+
+.btnSecondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inputMono {
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+  max-width: 100%;
+}
+
+.wcReadList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: none;
+}
+
+.wcReadRow {
+  border-bottom: 1px solid rgba(0, 48, 135, 0.12);
+  padding: 0.85rem 0 1rem;
+}
+
+.wcReadRow:last-child {
+  border-bottom: none;
+}
+
+.wcReadPathLine {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  direction: ltr;
+  text-align: left;
+  word-break: break-all;
+  margin-bottom: 0.35rem;
+}
+
+.wcReadPattern {
+  font-size: 0.68rem;
+  color: var(--color-text-secondary);
+  font-family: ui-monospace, monospace;
+  direction: ltr;
+  text-align: left;
+  word-break: break-all;
+  margin-bottom: 0.45rem;
+}
+
+.wcReadLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0.35rem 0 0.2rem;
+}
+
+.wcReadQueryLine {
+  font-size: 0.68rem;
+  font-family: ui-monospace, monospace;
+  color: var(--color-text-secondary);
+  direction: ltr;
+  text-align: left;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0 0 0.5rem;
+  max-height: 6rem;
+  overflow: auto;
+  padding: 0.35rem 0.45rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: var(--radius-sm);
+}
+
+.wcReadPathInputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.wcReadPathField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.wcReadPathField .input {
+  max-width: 10rem;
+}
+
+.wcReadPre {
+  font-size: 0.65rem;
+  line-height: 1.35;
+  font-family: ui-monospace, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 14rem;
+  overflow: auto;
+  padding: 0.5rem;
+  margin-top: 0.45rem;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-sm);
+  direction: ltr;
+  text-align: left;
+}

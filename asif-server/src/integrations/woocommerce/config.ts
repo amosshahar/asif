@@ -48,6 +48,8 @@ export interface WcOrderMetaKeyLists {
   deliveryDate: string[]
   deliveryTimeFrom: string[]
   deliveryTimeTo: string[]
+  /** Meta keys whose value is one string like `06/04/2026 - 11:00 - 16:00` (optional; mapper also auto-detects this pattern in any meta value). */
+  shippingSlotCombined: string[]
 }
 
 function splitEnvKeys(value: string | undefined, fallback: string): string[] {
@@ -59,7 +61,8 @@ function splitEnvKeys(value: string | undefined, fallback: string): string[] {
 
 /**
  * Env vars (optional): `WC_META_KEYS_DISTRIBUTION_AREA`, `WC_META_KEYS_DELIVERY_DATE`,
- * `WC_META_KEYS_DELIVERY_TIME_FROM`, `WC_META_KEYS_DELIVERY_TIME_TO` — comma-separated WC order meta keys.
+ * `WC_META_KEYS_DELIVERY_TIME_FROM`, `WC_META_KEYS_DELIVERY_TIME_TO`,
+ * `WC_META_KEYS_COMBINED_SHIPPING_SLOT` — comma-separated WC order meta keys.
  */
 export function loadWcOrderMetaKeyLists(): WcOrderMetaKeyLists {
   return {
@@ -78,6 +81,10 @@ export function loadWcOrderMetaKeyLists(): WcOrderMetaKeyLists {
     deliveryTimeTo: splitEnvKeys(
       process.env.WC_META_KEYS_DELIVERY_TIME_TO,
       'שעת חלוקה עד,delivery_time_to,_delivery_time_to,Delivery Time To'
+    ),
+    shippingSlotCombined: splitEnvKeys(
+      process.env.WC_META_KEYS_COMBINED_SHIPPING_SLOT,
+      ''
     ),
   }
 }

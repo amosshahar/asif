@@ -64,6 +64,49 @@ function dateFromWcCreated(dateCreated: string): string | null {
   return normalizeDateYyyyMmDd(dateCreated.slice(0, 10))
 }
 
+/**
+ * One meta value like `06/04/2026 - 11:00 - 16:00` (DD/MM/YYYY — common in IL checkout UIs).
+ */
+function parseCombinedShippingSlotString(raw: string): {
+  deliveryDate: string
+  deliveryTimeFrom: string | null
+  deliveryTimeTo: string | null
+} | null {
+  const t = raw.trim()
+  const m = t.match(
+    /^(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*$/u
+  )
+  if (!m) return null
+  const deliveryDate = normalizeDateYyyyMmDd(m[1])
+  if (!deliveryDate) return null
+  return {
+    deliveryDate,
+    deliveryTimeFrom: normalizeTimeString(m[2]),
+    deliveryTimeTo: normalizeTimeString(m[3]),
+  }
+}
+
+function tryCombinedShippingSlotFromWc(wc: WcOrder): ReturnType<
+  typeof parseCombinedShippingSlotString
+> | null {
+  const keys = wcMetaKeys()
+  if (keys.shippingSlotCombined.length > 0) {
+    const explicit = orderMetaByKeys(wc, keys.shippingSlotCombined).trim()
+    if (explicit) {
+      const p = parseCombinedShippingSlotString(explicit)
+      if (p) return p
+    }
+  }
+  const md = wc.meta_data ?? []
+  for (const row of md) {
+    const s = metaEntryValue(row.value).trim()
+    if (s.length < 12) continue
+    const p = parseCombinedShippingSlotString(s)
+    if (p) return p
+  }
+  return null
+}
+
 function logisticsFromWc(wc: WcOrder): Pick<
   Order,
   'distributionArea' | 'deliveryDate' | 'deliveryTimeFrom' | 'deliveryTimeTo'
@@ -75,26 +118,38 @@ function logisticsFromWc(wc: WcOrder): Pick<
   let distributionArea: string | null = fromMeta || fromShip || fromBill || null
   if (distributionArea === '') distributionArea = null
 
-  const dateRaw = orderMetaByKeys(wc, keys.deliveryDate).trim()
-  const deliveryDate =
-    (dateRaw ? normalizeDateYyyyMmDd(dateRaw) : null) ??
-    dateFromWcCreated(wc.date_created) ??
-    null
+  const combined = tryCombinedShippingSlotFromWc(wc)
 
-  const fromRaw = orderMetaByKeys(wc, keys.deliveryTimeFrom).trim()
-  const toRaw = orderMetaByKeys(wc, keys.deliveryTimeTo).trim()
+  let deliveryDate: string | null = null
+  let deliveryTimeFrom: string | null = null
+  let deliveryTimeTo: string | null = null
 
-  let deliveryTimeFrom = fromRaw ? normalizeTimeString(fromRaw) : null
-  let deliveryTimeTo = toRaw ? normalizeTimeString(toRaw) : null
+  if (combined) {
+    deliveryDate = combined.deliveryDate
+    deliveryTimeFrom = combined.deliveryTimeFrom
+    deliveryTimeTo = combined.deliveryTimeTo
+  } else {
+    const dateRaw = orderMetaByKeys(wc, keys.deliveryDate).trim()
+    deliveryDate =
+      (dateRaw ? normalizeDateYyyyMmDd(dateRaw) : null) ??
+      dateFromWcCreated(wc.date_created) ??
+      null
 
-  if (!deliveryTimeFrom && !deliveryTimeTo) {
-    const combined = fromRaw || toRaw
-    const range = combined.match(
-      /^(\d{1,2}\s*:\s*\d{2})\s*[-–]\s*(\d{1,2}\s*:\s*\d{2})/
-    )
-    if (range) {
-      deliveryTimeFrom = normalizeTimeString(range[1])
-      deliveryTimeTo = normalizeTimeString(range[2])
+    const fromRaw = orderMetaByKeys(wc, keys.deliveryTimeFrom).trim()
+    const toRaw = orderMetaByKeys(wc, keys.deliveryTimeTo).trim()
+
+    deliveryTimeFrom = fromRaw ? normalizeTimeString(fromRaw) : null
+    deliveryTimeTo = toRaw ? normalizeTimeString(toRaw) : null
+
+    if (!deliveryTimeFrom && !deliveryTimeTo) {
+      const span = fromRaw || toRaw
+      const range = span.match(
+        /^(\d{1,2}\s*:\s*\d{2})\s*[-–]\s*(\d{1,2}\s*:\s*\d{2})/
+      )
+      if (range) {
+        deliveryTimeFrom = normalizeTimeString(range[1])
+        deliveryTimeTo = normalizeTimeString(range[2])
+      }
     }
   }
 
@@ -240,11 +295,27 @@ function mapLine(line: WcLineItem): OrderItem {
   }
 }
 
+function shippingCityStreetFromWc(wc: WcOrder): {
+  shippingCity: string | null
+  shippingStreet: string | null
+} {
+  const ship = wc.shipping
+  const bill = wc.billing
+  const city =
+    (ship?.city ?? bill?.city ?? '').trim().replace(/\s+/g, ' ') || null
+  const a1 = (ship?.address_1 ?? bill?.address_1 ?? '').trim()
+  const a2 = (ship?.address_2 ?? bill?.address_2 ?? '').trim()
+  const street =
+    [a1, a2].filter(Boolean).join(', ').replace(/\s+/g, ' ').trim() || null
+  return { shippingCity: city, shippingStreet: street }
+}
+
 export function mapWcOrderToOrder(wc: WcOrder): Order {
   const first = wc.billing?.first_name?.trim() ?? ''
   const last = wc.billing?.last_name?.trim() ?? ''
   const customerName = [first, last].filter(Boolean).join(' ').trim() || 'לקוח'
   const logistics = logisticsFromWc(wc)
+  const addr = shippingCityStreetFromWc(wc)
   const orderCustomerNote = (wc.customer_note ?? '').trim() || null
 
   return {
@@ -259,6 +330,9 @@ export function mapWcOrderToOrder(wc: WcOrder): Order {
     wcOrderId: wc.id,
     wcStatus: wc.status,
     syncedAt: new Date().toISOString(),
+    wcDateCreated: (wc.date_created ?? '').trim() || null,
+    shippingCity: addr.shippingCity,
+    shippingStreet: addr.shippingStreet,
     ...logistics,
   }
 }

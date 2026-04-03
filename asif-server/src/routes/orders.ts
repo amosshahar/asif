@@ -112,14 +112,18 @@ router.patch('/:id/items/:itemId', async (req: Request, res: Response) => {
   if (collectedWeight != null) item.collectedWeight = collectedWeight as number | null
   if (collectionMethod) item.collectionMethod = collectionMethod as OrderItem['collectionMethod']
   if (missingReason !== undefined) {
-    item.missingReason = missingReason ? String(missingReason) : undefined
+    if (missingReason && String(missingReason).trim()) {
+      item.missingReason = String(missingReason)
+    } else {
+      delete item.missingReason
+    }
   }
 
   const ackDeviation =
     acknowledgeWeightDeviation === true || acknowledgeWeightDeviation === 'true'
 
   if (item.status === 'pending') {
-    item.weightDeviationAcknowledged = undefined
+    delete item.weightDeviationAcknowledged
   } else if (
     item.status === 'collected' &&
     item.collectionMethod === 'scale' &&
@@ -136,10 +140,10 @@ router.patch('/:id/items/:itemId', async (req: Request, res: Response) => {
       }
       item.weightDeviationAcknowledged = true
     } else {
-      item.weightDeviationAcknowledged = undefined
+      delete item.weightDeviationAcknowledged
     }
   } else {
-    item.weightDeviationAcknowledged = undefined
+    delete item.weightDeviationAcknowledged
   }
 
   if (item.status === 'pending') {

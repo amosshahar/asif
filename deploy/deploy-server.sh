@@ -26,6 +26,16 @@ rsync -avz --delete \
   -e "ssh -i $SSH_KEY" \
   ./ "$EC2_USER@$EC2_HOST:$TARGET/"
 
+# Prod loads WC_*, Firebase, PORT from this file (see asif-server/src/index.ts dotenv).
+# Kept separate from rsync --delete so a deploy without a local .env does not wipe the server file.
+ASIF_SERVER_ENV="$SCRIPT_DIR/../asif-server/.env"
+if [ -f "$ASIF_SERVER_ENV" ]; then
+  echo "▶ Copying asif-server/.env to EC2 (matches your dev machine)…"
+  scp -i "$SSH_KEY" "$ASIF_SERVER_ENV" "$EC2_USER@$EC2_HOST:$TARGET/.env"
+else
+  echo "  (skip — no local asif-server/.env; server keeps existing .env)"
+fi
+
 echo "▶ Installing dependencies and restarting PM2..."
 ssh -i "$SSH_KEY" "$EC2_USER@$EC2_HOST" "
   cd $TARGET

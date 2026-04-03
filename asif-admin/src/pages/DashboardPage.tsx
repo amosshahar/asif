@@ -55,7 +55,7 @@ export default function DashboardPage() {
     <div className={s.page}>
       <div className={s.header}>
         <div>
-          <h1 className={s.title}>דשבורד משמרת</h1>
+          <h1 className={s.title}>מלקטים</h1>
           <p className={s.subtitle}>
             {active} ליקוטנים פעילים
             {lastUpdate && <span className={s.updated}> · עודכן {formatTime(lastUpdate.toISOString())}</span>}

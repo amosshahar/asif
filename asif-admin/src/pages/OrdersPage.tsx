@@ -28,6 +28,24 @@ const STATUS_CLASS: Record<Order['status'], string> = {
 
 type StatusFilter = 'all' | Order['status']
 
+type SortKey = 'wc' | 'customer' | 'status' | 'items' | 'collector' | 'started' | 'completed'
+
+const STATUS_SORT_ORDER: Record<Order['status'], number> = {
+  queued: 0,
+  assigned: 1,
+  in_progress: 2,
+  waiting_cs: 3,
+  completed: 4,
+}
+
+function itemMetrics(items: Order['items'] | undefined): { lines: number; units: number } {
+  const list = Array.isArray(items) ? items : []
+  return {
+    lines: list.length,
+    units: list.reduce((acc, i) => acc + (i.quantity ?? 0), 0),
+  }
+}
+
 function itemSummary(items: Order['items'] | undefined): string {
   const list = Array.isArray(items) ? items : []
   const lines = list.length
@@ -47,47 +65,82 @@ function fmtWhen(iso: string | null): string {
   }
 }
 
-function fmtDeliveryDate(yyyyMmDd: string | null | undefined): string {
-  if (!yyyyMmDd) return '—'
-  const parts = yyyyMmDd.trim().split('-').map((x) => parseInt(x, 10))
-  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return yyyyMmDd
-  const [y, m, d] = parts
-  try {
-    return new Date(y, m - 1, d).toLocaleDateString('he-IL', { dateStyle: 'short' })
-  } catch {
-    return yyyyMmDd
-  }
+function normIncludes(hay: string, needle: string): boolean {
+  const n = needle.trim().toLowerCase()
+  if (!n) return true
+  return hay.toLowerCase().includes(n)
 }
 
-function fmtDeliveryWindow(o: Order): string {
-  const a = o.deliveryTimeFrom?.trim()
-  const b = o.deliveryTimeTo?.trim()
-  if (!a && !b) return '—'
-  return `${a || '—'} – ${b || '—'}`
+function collectorSortLabel(o: Order, nameById: Map<string, string>): string {
+  if (!o.assignedTo) return ''
+  return (nameById.get(o.assignedTo) ?? o.assignedTo).trim()
 }
 
-function timeStrToMinutes(t: string | null | undefined): number | null {
-  if (!t || typeof t !== 'string') return null
-  const m = t.trim().match(/^(\d{1,2}):(\d{2})/)
-  if (!m) return null
-  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10)
+function compareIso(a: string | null, b: string | null, dir: 1 | -1): number {
+  const ta = a ? new Date(a).getTime() : NaN
+  const tb = b ? new Date(b).getTime() : NaN
+  const aBad = Number.isNaN(ta)
+  const bBad = Number.isNaN(tb)
+  if (aBad && bBad) return 0
+  if (aBad) return 1
+  if (bBad) return -1
+  return dir * (ta - tb)
 }
 
-/** Overlap between order delivery window and filter range [filterFrom, filterTo] (inclusive minutes). */
-function orderOverlapsTimeFilter(
-  o: Order,
-  filterFrom: string,
-  filterTo: string
-): boolean {
-  if (!filterFrom && !filterTo) return true
-  const fStart = filterFrom ? timeStrToMinutes(filterFrom) ?? 0 : 0
-  const fEnd = filterTo ? timeStrToMinutes(filterTo) ?? 24 * 60 - 1 : 24 * 60 - 1
-  const oStartRaw = o.deliveryTimeFrom
-  const oEndRaw = o.deliveryTimeTo ?? o.deliveryTimeFrom
-  if (!oStartRaw && !oEndRaw) return true
-  const oStart = timeStrToMinutes(oStartRaw) ?? 0
-  const oEnd = timeStrToMinutes(oEndRaw ?? oStartRaw) ?? oStart
-  return !(oEnd < fStart || oStart > fEnd)
+function compareTextHe(a: string, b: string, dir: 1 | -1): number {
+  if (!a && !b) return 0
+  if (!a) return 1
+  if (!b) return -1
+  return dir * a.localeCompare(b, 'he', { sensitivity: 'base' })
+}
+
+function sortOrdersList(
+  list: Order[],
+  key: SortKey,
+  dir: 'asc' | 'desc',
+  nameById: Map<string, string>
+): Order[] {
+  const m: 1 | -1 = dir === 'asc' ? 1 : -1
+  return [...list].sort((a, b) => {
+    let c = 0
+    switch (key) {
+      case 'wc': {
+        const na = a.wcOrderId
+        const nb = b.wcOrderId
+        if (na == null && nb == null) c = 0
+        else if (na == null) c = 1
+        else if (nb == null) c = -1
+        else c = m * (na - nb)
+        break
+      }
+      case 'customer':
+        c = compareTextHe((a.customerName ?? '').trim(), (b.customerName ?? '').trim(), m)
+        break
+      case 'status':
+        c = m * (STATUS_SORT_ORDER[a.status] - STATUS_SORT_ORDER[b.status])
+        break
+      case 'items': {
+        const ia = itemMetrics(a.items)
+        const ib = itemMetrics(b.items)
+        if (ia.lines !== ib.lines) c = m * (ia.lines - ib.lines)
+        else c = m * (ia.units - ib.units)
+        break
+      }
+      case 'collector':
+        c = compareTextHe(collectorSortLabel(a, nameById), collectorSortLabel(b, nameById), m)
+        break
+      case 'started':
+        c = compareIso(a.startedAt, b.startedAt, m)
+        break
+      case 'completed':
+        c = compareIso(a.completedAt, b.completedAt, m)
+        break
+      default:
+        break
+    }
+    if (c !== 0) return c
+    return a.id.localeCompare(b.id)
+  })
 }
 
 function axiosErrorMessage(err: unknown): string {
@@ -114,13 +167,15 @@ export default function OrdersPage() {
   const [wcBgSyncing, setWcBgSyncing] = useState(false)
   const bgPollStarted = useRef(0)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  const [filterDeliveryDate, setFilterDeliveryDate] = useState('')
-  const [filterArea, setFilterArea] = useState('')
-  const [filterTimeFrom, setFilterTimeFrom] = useState('')
-  const [filterTimeTo, setFilterTimeTo] = useState('')
+  const [filterCustomer, setFilterCustomer] = useState('')
+  const [filterWcId, setFilterWcId] = useState('')
   const [assignFor, setAssignFor] = useState<Order | null>(null)
   const [pickCollectorId, setPickCollectorId] = useState('')
   const [assigning, setAssigning] = useState(false)
+  const [sortState, setSortState] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({
+    key: 'wc',
+    dir: 'desc',
+  })
 
   const collectors = useMemo(
     () => users.filter((u) => u.role === 'collector'),
@@ -207,42 +262,45 @@ export default function OrdersPage() {
     return () => window.clearInterval(id)
   }, [wcSync])
 
-  const distinctAreas = useMemo(() => {
-    const set = new Set<string>()
-    for (const o of orders) {
-      const a = (o.distributionArea ?? '').trim()
-      if (a) set.add(a)
-    }
-    return [...set].sort((a, b) => a.localeCompare(b, 'he'))
-  }, [orders])
-
-  const hasLogisticsFilters =
-    Boolean(filterDeliveryDate) ||
-    Boolean(filterArea) ||
-    Boolean(filterTimeFrom) ||
-    Boolean(filterTimeTo)
+  const hasColumnFilters =
+    Boolean(filterCustomer.trim()) || Boolean(filterWcId.trim())
 
   const filtered = useMemo(() => {
     let safe = orders.filter((o) => o && typeof o.id === 'string')
     if (statusFilter !== 'all') safe = safe.filter((o) => o.status === statusFilter)
-    if (filterDeliveryDate) {
-      safe = safe.filter((o) => o.deliveryDate === filterDeliveryDate)
+    if (filterCustomer.trim()) {
+      safe = safe.filter((o) => normIncludes(o.customerName ?? '', filterCustomer))
     }
-    if (filterArea) {
-      safe = safe.filter((o) => (o.distributionArea ?? '').trim() === filterArea)
-    }
-    if (filterTimeFrom || filterTimeTo) {
-      safe = safe.filter((o) => orderOverlapsTimeFilter(o, filterTimeFrom, filterTimeTo))
+    if (filterWcId.trim()) {
+      const needle = filterWcId.trim().replace(/^#/, '').replace(/\s/g, '')
+      safe = safe.filter((o) => {
+        if (o.wcOrderId == null) return false
+        return String(o.wcOrderId).includes(needle)
+      })
     }
     return safe
-  }, [
-    orders,
-    statusFilter,
-    filterDeliveryDate,
-    filterArea,
-    filterTimeFrom,
-    filterTimeTo,
-  ])
+  }, [orders, statusFilter, filterCustomer, filterWcId])
+
+  const sortedOrders = useMemo(
+    () => sortOrdersList(filtered, sortState.key, sortState.dir, nameById),
+    [filtered, sortState.key, sortState.dir, nameById]
+  )
+
+  function toggleSort(key: SortKey) {
+    setSortState((s) =>
+      s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' }
+    )
+  }
+
+  function sortIndicator(key: SortKey): string {
+    if (sortState.key !== key) return ''
+    return sortState.dir === 'asc' ? ' ▲' : ' ▼'
+  }
+
+  function thAriaSort(key: SortKey): 'none' | 'ascending' | 'descending' {
+    if (sortState.key !== key) return 'none'
+    return sortState.dir === 'asc' ? 'ascending' : 'descending'
+  }
 
   async function confirmAssign() {
     if (!assignFor || !pickCollectorId) return
@@ -326,62 +384,37 @@ export default function OrdersPage() {
       </div>
 
       <div className={s.logisticsFilters}>
-        <p className={s.logisticsFiltersTitle}>סינון לוגיסטיקה (הקצאה למלקט)</p>
+        <p className={s.logisticsFiltersTitle}>סינון לפי עמודות</p>
         <div className={s.filterField}>
-          <label htmlFor="filter-delivery-date">תאריך חלוקה</label>
+          <label htmlFor="filter-wc-id">WC</label>
           <input
-            id="filter-delivery-date"
+            id="filter-wc-id"
             className={s.filterInput}
-            type="date"
-            value={filterDeliveryDate}
-            onChange={(e) => setFilterDeliveryDate(e.target.value)}
+            type="text"
+            inputMode="numeric"
+            placeholder="מס׳ הזמנה"
+            value={filterWcId}
+            onChange={(e) => setFilterWcId(e.target.value)}
           />
         </div>
         <div className={s.filterField}>
-          <label htmlFor="filter-area">אזור חלוקה</label>
-          <select
-            id="filter-area"
-            className={s.filterSelect}
-            value={filterArea}
-            onChange={(e) => setFilterArea(e.target.value)}
-          >
-            <option value="">כל האזורים</option>
-            {distinctAreas.map((a) => (
-              <option key={a} value={a}>
-                {a}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className={s.filterField}>
-          <label htmlFor="filter-time-from">משעה</label>
+          <label htmlFor="filter-customer">לקוח</label>
           <input
-            id="filter-time-from"
+            id="filter-customer"
             className={s.filterInput}
-            type="time"
-            value={filterTimeFrom}
-            onChange={(e) => setFilterTimeFrom(e.target.value)}
-          />
-        </div>
-        <div className={s.filterField}>
-          <label htmlFor="filter-time-to">עד שעה</label>
-          <input
-            id="filter-time-to"
-            className={s.filterInput}
-            type="time"
-            value={filterTimeTo}
-            onChange={(e) => setFilterTimeTo(e.target.value)}
+            type="search"
+            placeholder="שם"
+            value={filterCustomer}
+            onChange={(e) => setFilterCustomer(e.target.value)}
           />
         </div>
         <button
           type="button"
           className={s.filterReset}
-          disabled={!hasLogisticsFilters}
+          disabled={!hasColumnFilters}
           onClick={() => {
-            setFilterDeliveryDate('')
-            setFilterArea('')
-            setFilterTimeFrom('')
-            setFilterTimeTo('')
+            setFilterCustomer('')
+            setFilterWcId('')
           }}
         >
           איפוס סינון
@@ -395,8 +428,8 @@ export default function OrdersPage() {
           <p className={s.empty}>
             {orders.length === 0 && !error
               ? 'אין הזמנות. אם הוגדר WooCommerce בשרת, נסו «רענון»; אחרת הגדירו WC_* ב-.env.'
-              : hasLogisticsFilters || statusFilter !== 'all'
-                ? 'אין הזמנות במסנן הנוכחי. נסו «הכל», איפוס סינון לוגיסטיקה או רענון.'
+              : hasColumnFilters || statusFilter !== 'all'
+                ? 'אין הזמנות במסנן הנוכחי. נסו «הכל», איפוס סינון או רענון.'
                 : 'אין הזמנות במסנן הנוכחי. נסו «הכל» או רענון.'}
           </p>
         </div>
@@ -405,38 +438,65 @@ export default function OrdersPage() {
           <table className={s.table}>
             <thead>
               <tr>
-                <th>WC</th>
-                <th>לקוח</th>
-                <th>תאריך חלוקה</th>
-                <th>אזור</th>
-                <th>חלון שעות</th>
-                <th>הערת ש״ל</th>
-                <th>סטטוס</th>
-                <th>פריטים</th>
-                <th>ליקוטן</th>
-                <th>התחלה</th>
-                <th>סיום</th>
-                <th />
+                <th scope="col" aria-sort={thAriaSort('wc')}>
+                  <button type="button" className={s.thSortBtn} onClick={() => toggleSort('wc')}>
+                    WC{sortIndicator('wc')}
+                  </button>
+                </th>
+                <th scope="col" aria-sort={thAriaSort('customer')}>
+                  <button
+                    type="button"
+                    className={s.thSortBtn}
+                    onClick={() => toggleSort('customer')}
+                  >
+                    לקוח{sortIndicator('customer')}
+                  </button>
+                </th>
+                <th scope="col" aria-sort={thAriaSort('status')}>
+                  <button type="button" className={s.thSortBtn} onClick={() => toggleSort('status')}>
+                    סטטוס{sortIndicator('status')}
+                  </button>
+                </th>
+                <th scope="col" aria-sort={thAriaSort('items')}>
+                  <button type="button" className={s.thSortBtn} onClick={() => toggleSort('items')}>
+                    פריטים{sortIndicator('items')}
+                  </button>
+                </th>
+                <th scope="col" aria-sort={thAriaSort('collector')}>
+                  <button
+                    type="button"
+                    className={s.thSortBtn}
+                    onClick={() => toggleSort('collector')}
+                  >
+                    ליקוטן{sortIndicator('collector')}
+                  </button>
+                </th>
+                <th scope="col" aria-sort={thAriaSort('started')}>
+                  <button
+                    type="button"
+                    className={s.thSortBtn}
+                    onClick={() => toggleSort('started')}
+                  >
+                    התחלה{sortIndicator('started')}
+                  </button>
+                </th>
+                <th scope="col" aria-sort={thAriaSort('completed')}>
+                  <button
+                    type="button"
+                    className={s.thSortBtn}
+                    onClick={() => toggleSort('completed')}
+                  >
+                    סיום{sortIndicator('completed')}
+                  </button>
+                </th>
+                <th scope="col" className={s.thActions} aria-label="פעולות" />
               </tr>
             </thead>
             <tbody>
-              {filtered.map((o) => (
+              {sortedOrders.map((o) => (
                 <tr key={o.id}>
                   <td>{o.wcOrderId ?? '—'}</td>
                   <td>{o.customerName || '—'}</td>
-                  <td>{fmtDeliveryDate(o.deliveryDate ?? undefined)}</td>
-                  <td>{(o.distributionArea ?? '').trim() || '—'}</td>
-                  <td>{fmtDeliveryWindow(o)}</td>
-                  <td
-                    className={s.noteCell}
-                    title={(o.csHandoffReason ?? '').trim() || undefined}
-                  >
-                    {(o.csHandoffReason ?? '').trim()
-                      ? `${(o.csHandoffReason ?? '').trim().slice(0, 48)}${
-                          (o.csHandoffReason ?? '').trim().length > 48 ? '…' : ''
-                        }`
-                      : '—'}
-                  </td>
                   <td>
                     <span
                       className={`${s.statusBadge} ${STATUS_CLASS[o.status] ?? s.statusQueued}`}

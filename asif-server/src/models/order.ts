@@ -44,8 +44,14 @@ export interface Order {
   wcStatus?: string
   /** When this document was last synced from WooCommerce. */
   syncedAt?: string
+  /** WC order `date_created` (ISO) — when the customer submitted the order. */
+  wcDateCreated?: string | null
   /** אזור חלוקה — from WC order meta (see WC_META_KEYS_*) or shipping/billing city fallback. */
   distributionArea?: string | null
+  /** משלוח: עיר (WC shipping, גיבוי billing). */
+  shippingCity?: string | null
+  /** משלוח: רחוב (address_1 + address_2, shipping ואז billing). */
+  shippingStreet?: string | null
   /** תאריך חלוקה YYYY-MM-DD — meta or WC date_created date. */
   deliveryDate?: string | null
   /** תחילת חלון שעות HH:mm — meta. */

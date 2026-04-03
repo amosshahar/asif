@@ -139,6 +139,15 @@
   transition: width 0.4s ease;
 }
 
+.sortHint {
+  margin: 0;
+  padding: 8px 16px 4px;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--color-text-secondary);
+  text-align: right;
+}
+
 /* ── List ── */
 .list {
   flex: 1;
@@ -214,18 +223,55 @@
   background: linear-gradient(135deg, #e5e7eb 0%, #f3f4f6 100%);
 }
 
-.locationRow {
+.metaBlock {
   display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #065f46;
-  margin-top: 2px;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
-.locationIcon {
-  flex-shrink: 0;
+.metaRow {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  text-align: right;
+}
+
+.metaLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metaValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.metaValueOk {
+  color: #0f766e;
+}
+
+.metaValueMuted {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.metaValueMono {
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1e3a5f;
 }
 
 .itemInfo {

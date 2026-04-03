@@ -1,7 +1,11 @@
 import type { WcListOrdersParams, WcOrder } from './types'
 import type { WooCommerceConfig } from './config'
 
-function buildUrl(config: WooCommerceConfig, path: string, query: Record<string, string | undefined>): string {
+export function buildWcV3Url(
+  config: WooCommerceConfig,
+  path: string,
+  query: Record<string, string | undefined>,
+): string {
   const base = `${config.storeUrl}/wp-json/wc/v3${path}`
   const u = new URL(base)
   u.searchParams.set('consumer_key', config.consumerKey)
@@ -10,6 +14,31 @@ function buildUrl(config: WooCommerceConfig, path: string, query: Record<string,
     if (v !== undefined && v !== '') u.searchParams.set(k, v)
   }
   return u.toString()
+}
+
+const WC_LAB_BODY_MAX = 2_500_000
+
+/** Raw GET to WooCommerce REST v3 — returns body text as returned by the store (no JSON parse). */
+export async function fetchWcV3Raw(
+  config: WooCommerceConfig,
+  relativePath: string,
+  query: Record<string, string | undefined>,
+): Promise<{ status: number; contentType: string | null; text: string; truncated: boolean }> {
+  const path = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
+  const url = buildWcV3Url(config, path, query)
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  })
+  const text = await res.text()
+  const truncated = text.length > WC_LAB_BODY_MAX
+  const body = truncated ? text.slice(0, WC_LAB_BODY_MAX) + '\n\n---\n[ASIF: WC body truncated]\n' : text
+  return {
+    status: res.status,
+    contentType: res.headers.get('content-type'),
+    text: body,
+    truncated,
+  }
 }
 
 export class WooCommerceHttpError extends Error {
@@ -32,7 +61,7 @@ export async function listOrders(
   const status = params.status
   const statusParam = Array.isArray(status) ? status.join(',') : status
 
-  const url = buildUrl(config, '/orders', {
+  const url = buildWcV3Url(config, '/orders', {
     per_page: String(perPage),
     page: String(page),
     status: statusParam,
@@ -60,7 +89,7 @@ export async function listOrders(
 }
 
 export async function getWcOrderById(config: WooCommerceConfig, wcOrderId: number): Promise<WcOrder> {
-  const url = buildUrl(config, `/orders/${wcOrderId}`, {})
+  const url = buildWcV3Url(config, `/orders/${wcOrderId}`, {})
   const res = await fetch(url, {
     method: 'GET',
     headers: { Accept: 'application/json' },

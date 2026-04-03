@@ -3,13 +3,14 @@
 ## Architecture
 
 ```
-iPhone App  ──HTTPS──▶  asif-api.tulidu.com (CloudFront EL5YSKDH45CFX) ──HTTP:3002──▶  EC2 (PM2 asif-server)
-Browser     ──HTTPS──▶  asif.tulidu.com     (CloudFront E1KCKLWQAC76IU) ────────────▶  S3 (asif-admin-frontend)
+iPhone App      ──HTTPS──▶  asif-api.tulidu.com (CloudFront) ──HTTP:3002──▶  EC2 (PM2 asif-server)
+Admin browser   ──HTTPS──▶  asif.tulidu.com (CloudFront) ───────────────────▶  S3 (asif-admin-frontend)
+asif-app web    ──HTTPS──▶  asif-app.tulidu.com (CloudFront) ───────────────▶  S3 (asif-app-web)
 ```
 
 **Reused from tulidu-sport:**
 - Same EC2 instance (`ec2-3-92-164-103.compute-1.amazonaws.com`)
-- Same ACM certificate (`*.tulidu.com`) — already covers both new subdomains
+- Same ACM certificate (`*.tulidu.com`) — one label per hostname (`asif.tulidu.com`, `asif-app.tulidu.com`, …).
 - Same Route53 hosted zone (`tulidu.com`)
 
 ---
@@ -189,11 +190,102 @@ cd /path/to/asif
 ./deploy/deploy-admin.sh
 ```
 
+### Deploy asif-app web (`https://asif-app.tulidu.com`)
+```bash
+cd /path/to/asif
+./deploy/deploy-asif-app-web.sh
+```
+One-time: bucket `asif-app-web` + CloudFront + Route53 (below). Dev: `http://localhost:5175`.
+
 ### Setup deploy/.env (first time)
 ```bash
 cp deploy/env.example deploy/.env
-# Fill in ADMIN_CF_ID and API_CF_ID after Step 2 and Step 4
+# ADMIN_CF_ID, ASIF_APP_WEB_CF_ID (if used), API_CF_ID
 ```
+
+---
+
+## One-time: asif-app-web (S3 + CloudFront)
+
+Mirror the admin UI setup (OAC, SPA 403/404 → `index.html`). Bucket **`asif-app-web`**, alias **`asif-app.tulidu.com`**.
+
+### Bucket
+
+```bash
+aws s3api create-bucket \
+  --bucket asif-app-web \
+  --region eu-west-1 \
+  --create-bucket-configuration LocationConstraint=eu-west-1
+
+aws s3api put-public-access-block \
+  --bucket asif-app-web \
+  --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+```
+
+### CloudFront
+
+Use the same **Origin Access Control** id as admin (`E25DA55YS7SXRG`) or your OAC id:
+
+```bash
+aws cloudfront create-distribution --distribution-config '{
+  "CallerReference": "asif-app-web-'$(date +%s)'",
+  "Aliases": { "Quantity": 1, "Items": ["asif-app.tulidu.com"] },
+  "DefaultRootObject": "index.html",
+  "Origins": {
+    "Quantity": 1,
+    "Items": [{
+      "Id": "asif-app-web",
+      "DomainName": "asif-app-web.s3.eu-west-1.amazonaws.com",
+      "OriginAccessControlId": "E25DA55YS7SXRG",
+      "S3OriginConfig": { "OriginAccessIdentity": "" }
+    }]
+  },
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "asif-app-web",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "AllowedMethods": { "Quantity": 2, "Items": ["HEAD","GET"], "CachedMethods": { "Quantity": 2, "Items": ["HEAD","GET"] } },
+    "Compress": true,
+    "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6"
+  },
+  "CustomErrorResponses": {
+    "Quantity": 2,
+    "Items": [
+      { "ErrorCode": 403, "ResponsePagePath": "/index.html", "ResponseCode": "200", "ErrorCachingMinTTL": 10 },
+      { "ErrorCode": 404, "ResponsePagePath": "/index.html", "ResponseCode": "200", "ErrorCachingMinTTL": 10 }
+    ]
+  },
+  "ViewerCertificate": {
+    "ACMCertificateArn": "arn:aws:acm:us-east-1:201698141128:certificate/e7e18153-7052-4554-9d2a-94483148ff77",
+    "SSLSupportMethod": "sni-only",
+    "MinimumProtocolVersion": "TLSv1.2_2021"
+  },
+  "Enabled": true,
+  "HttpVersion": "http2"
+}'
+```
+
+Save distribution id → **`ASIF_APP_WEB_CF_ID`** in `deploy/.env`.
+
+### S3 bucket policy
+
+```bash
+APP_WEB_CF_ARN="arn:aws:cloudfront::201698141128:distribution/<ASIF_APP_WEB_CF_ID>"
+
+aws s3api put-bucket-policy --bucket asif-app-web --policy "{
+  \"Version\": \"2012-10-17\",
+  \"Statement\": [{
+    \"Effect\": \"Allow\",
+    \"Principal\": { \"Service\": \"cloudfront.amazonaws.com\" },
+    \"Action\": \"s3:GetObject\",
+    \"Resource\": \"arn:aws:s3:::asif-app-web/*\",
+    \"Condition\": { \"StringEquals\": { \"AWS:SourceArn\": \"$APP_WEB_CF_ARN\" } }
+  }]
+}"
+```
+
+### Route53
+
+Point **`asif-app.tulidu.com`** at the distribution (CNAME or alias). Then `./deploy/deploy-asif-app-web.sh`.
 
 ---
 
@@ -215,8 +307,9 @@ For testing on a real device before prod, set the IP in `asif-app/.env.local`:
 VITE_API_URL=http://192.168.x.x:3002
 ```
 
-For production build (handled automatically by `deploy-admin.sh`):
+For production web build (`deploy-asif-app-web.sh`):
 ```
 VITE_API_URL=https://asif-api.tulidu.com
+VITE_API_URL_PRODUCTION=https://asif-api.tulidu.com
 ```
 (If you use `https://api.asif.tulidu.com`, that hostname must exist in Route53 — currently the live API is `asif-api.tulidu.com` per product doc.)

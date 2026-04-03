@@ -1,0 +1,3401 @@
+{
+  "generatedFrom": "docs/wc-asif-json.json",
+  "generatedAt": "2026-04-03T20:47:55.556Z",
+  "routeCount": 80,
+  "routes": [
+    {
+      "id": "wc3-0",
+      "pattern": "/wc/v3/coupons",
+      "displayPath": "coupons",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "code",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "dates_are_gmt",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "modified_after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "modified_before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "date",
+            "id",
+            "include",
+            "title",
+            "slug",
+            "modified"
+          ],
+          "default": "date"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-1",
+      "pattern": "/wc/v3/coupons/(?P<id>[\\d]+)",
+      "displayPath": "coupons/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-2",
+      "pattern": "/wc/v3/customers",
+      "displayPath": "customers",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "email",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "asc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "id",
+            "include",
+            "name",
+            "registered_date"
+          ],
+          "default": "name"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "role",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "all",
+            "administrator",
+            "editor",
+            "author",
+            "contributor",
+            "subscriber",
+            "translator",
+            "customer",
+            "shop_manager"
+          ],
+          "default": "customer"
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-3",
+      "pattern": "/wc/v3/customers/(?P<customer_id>[\\d]+)/downloads",
+      "displayPath": "customers/{customer_id}/downloads",
+      "pathParams": [
+        "customer_id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-4",
+      "pattern": "/wc/v3/customers/(?P<id>[\\d]+)",
+      "displayPath": "customers/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-5",
+      "pattern": "/wc/v3/data",
+      "displayPath": "data",
+      "pathParams": [],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-6",
+      "pattern": "/wc/v3/data/continents",
+      "displayPath": "data/continents",
+      "pathParams": [],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-7",
+      "pattern": "/wc/v3/data/continents/(?P<location>[\\w-]+)",
+      "displayPath": "data/continents/{location}",
+      "pathParams": [
+        "location"
+      ],
+      "queryParams": [
+        {
+          "name": "continent",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-8",
+      "pattern": "/wc/v3/data/countries",
+      "displayPath": "data/countries",
+      "pathParams": [],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-9",
+      "pattern": "/wc/v3/data/countries/(?P<location>[\\w-]+)",
+      "displayPath": "data/countries/{location}",
+      "pathParams": [
+        "location"
+      ],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-10",
+      "pattern": "/wc/v3/data/currencies",
+      "displayPath": "data/currencies",
+      "pathParams": [],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-11",
+      "pattern": "/wc/v3/data/currencies/(?P<currency>[\\w-]{3})",
+      "displayPath": "data/currencies/{currency}",
+      "pathParams": [
+        "currency"
+      ],
+      "queryParams": [
+        {
+          "name": "location",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-12",
+      "pattern": "/wc/v3/data/currencies/current",
+      "displayPath": "data/currencies/current",
+      "pathParams": [],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-13",
+      "pattern": "/wc/v3/layout-templates",
+      "displayPath": "layout-templates",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "area",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-14",
+      "pattern": "/wc/v3/layout-templates/(?P<id>\\w[\\w\\s\\-]*)",
+      "displayPath": "layout-templates/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-15",
+      "pattern": "/wc/v3/marketplace/featured",
+      "displayPath": "marketplace/featured",
+      "pathParams": [],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-16",
+      "pattern": "/wc/v3/marketplace/subscriptions",
+      "displayPath": "marketplace/subscriptions",
+      "pathParams": [],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-17",
+      "pattern": "/wc/v3/marketplace/subscriptions/install-url",
+      "displayPath": "marketplace/subscriptions/install-url",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "product_key",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-18",
+      "pattern": "/wc/v3/orders",
+      "displayPath": "orders",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "created_via",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "customer",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "dates_are_gmt",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "dp",
+          "required": false,
+          "type": "integer",
+          "default": 2
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "exclude_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "modified_after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "modified_before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        },
+        {
+          "name": "order_item_display_meta",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "date",
+            "id",
+            "include",
+            "title",
+            "slug",
+            "modified"
+          ],
+          "default": "date"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "parent",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "parent_exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "product",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "required": false,
+          "type": "array",
+          "default": "any"
+        }
+      ]
+    },
+    {
+      "id": "wc3-19",
+      "pattern": "/wc/v3/orders/(?P<id>[\\d]+)",
+      "displayPath": "orders/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-20",
+      "pattern": "/wc/v3/orders/(?P<id>[\\d]+)/actions/email_templates",
+      "displayPath": "orders/{id}/actions/email_templates",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-21",
+      "pattern": "/wc/v3/orders/(?P<id>[\\d]+)/receipt",
+      "displayPath": "orders/{id}/receipt",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-22",
+      "pattern": "/wc/v3/orders/(?P<order_id>[\\d]+)/notes",
+      "displayPath": "orders/{order_id}/notes",
+      "pathParams": [
+        "order_id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "type",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "any",
+            "customer",
+            "internal"
+          ],
+          "default": "any"
+        }
+      ]
+    },
+    {
+      "id": "wc3-23",
+      "pattern": "/wc/v3/orders/(?P<order_id>[\\d]+)/notes/(?P<id>[\\d]+)",
+      "displayPath": "orders/{order_id}/notes/{id}",
+      "pathParams": [
+        "order_id",
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-24",
+      "pattern": "/wc/v3/orders/(?P<order_id>[\\d]+)/refunds",
+      "displayPath": "orders/{order_id}/refunds",
+      "pathParams": [
+        "order_id"
+      ],
+      "queryParams": [
+        {
+          "name": "after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "dates_are_gmt",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "dp",
+          "required": false,
+          "type": "integer",
+          "default": 2
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "exclude_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "modified_after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "modified_before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        },
+        {
+          "name": "order_item_display_meta",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "date",
+            "id",
+            "include",
+            "title",
+            "slug",
+            "modified"
+          ],
+          "default": "date"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "parent",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "parent_exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-25",
+      "pattern": "/wc/v3/orders/(?P<order_id>[\\d]+)/refunds/(?P<id>[\\d]+)",
+      "displayPath": "orders/{order_id}/refunds/{id}",
+      "pathParams": [
+        "order_id",
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-26",
+      "pattern": "/wc/v3/orders/statuses",
+      "displayPath": "orders/statuses",
+      "pathParams": [],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-27",
+      "pattern": "/wc/v3/payment_gateways",
+      "displayPath": "payment_gateways",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-28",
+      "pattern": "/wc/v3/payment_gateways/(?P<id>[\\w-]+)",
+      "displayPath": "payment_gateways/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-29",
+      "pattern": "/wc/v3/products",
+      "displayPath": "products",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "attribute",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "attribute_term",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "brand",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "category",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "dates_are_gmt",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "downloadable",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "exclude_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "exclude_status",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "exclude_types",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "featured",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include_status",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "include_types",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "max_price",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "min_price",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "modified_after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "modified_before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "on_sale",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "date",
+            "id",
+            "include",
+            "title",
+            "slug",
+            "modified",
+            "popularity",
+            "rating",
+            "post__in",
+            "price",
+            "sales",
+            "menu_order",
+            "random",
+            "popularity",
+            "rating",
+            "menu_order",
+            "price",
+            "popularity",
+            "rating"
+          ],
+          "default": "date"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "parent",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "parent_exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "pos_products_only",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "search_fields",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "search_name_or_sku",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "search_sku",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "shipping_class",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "sku",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "slug",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "any",
+            "future",
+            "trash",
+            "draft",
+            "pending",
+            "private",
+            "publish"
+          ],
+          "default": "any"
+        },
+        {
+          "name": "stock_status",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "instock",
+            "outofstock",
+            "onbackorder"
+          ]
+        },
+        {
+          "name": "tag",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "type",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "simple",
+            "grouped",
+            "external",
+            "variable"
+          ]
+        },
+        {
+          "name": "virtual",
+          "required": false,
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "id": "wc3-30",
+      "pattern": "/wc/v3/products/(?P<id>[\\d]+)",
+      "displayPath": "products/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-31",
+      "pattern": "/wc/v3/products/(?P<id>[\\d]+)/related",
+      "displayPath": "products/{id}/related",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-32",
+      "pattern": "/wc/v3/products/(?P<product_id>[\\d]+)/variations",
+      "displayPath": "products/{product_id}/variations",
+      "pathParams": [
+        "product_id"
+      ],
+      "queryParams": [
+        {
+          "name": "after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "attributes",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "dates_are_gmt",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "downloadable",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "exclude_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "exclude_status",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "has_price",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include_status",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "max_price",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "min_price",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "modified_after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "modified_before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "on_sale",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "date",
+            "id",
+            "include",
+            "title",
+            "slug",
+            "modified",
+            "menu_order"
+          ],
+          "default": "date"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "parent",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "parent_exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "pos_products_only",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "sku",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "slug",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "any",
+            "future",
+            "trash",
+            "draft",
+            "pending",
+            "private",
+            "publish"
+          ],
+          "default": "any"
+        },
+        {
+          "name": "stock_status",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "instock",
+            "outofstock",
+            "onbackorder"
+          ]
+        },
+        {
+          "name": "virtual",
+          "required": false,
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "id": "wc3-33",
+      "pattern": "/wc/v3/products/(?P<product_id>[\\d]+)/variations/(?P<id>[\\d]+)",
+      "displayPath": "products/{product_id}/variations/{id}",
+      "pathParams": [
+        "product_id",
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-34",
+      "pattern": "/wc/v3/products/attributes",
+      "displayPath": "products/attributes",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-35",
+      "pattern": "/wc/v3/products/attributes/(?P<attribute_id>[\\d]+)/terms",
+      "displayPath": "products/attributes/{attribute_id}/terms",
+      "pathParams": [
+        "attribute_id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "hide_empty",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "asc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "id",
+            "include",
+            "name",
+            "slug",
+            "term_group",
+            "description",
+            "count"
+          ],
+          "default": "name"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "parent",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "product",
+          "required": false,
+          "type": "integer",
+          "default": null
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "slug",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-36",
+      "pattern": "/wc/v3/products/attributes/(?P<attribute_id>[\\d]+)/terms/(?P<id>[\\d]+)",
+      "displayPath": "products/attributes/{attribute_id}/terms/{id}",
+      "pathParams": [
+        "attribute_id",
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-37",
+      "pattern": "/wc/v3/products/attributes/(?P<id>[\\d]+)",
+      "displayPath": "products/attributes/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-38",
+      "pattern": "/wc/v3/products/brands",
+      "displayPath": "products/brands",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "hide_empty",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "asc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "id",
+            "include",
+            "name",
+            "slug",
+            "term_group",
+            "description",
+            "count"
+          ],
+          "default": "name"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "parent",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "product",
+          "required": false,
+          "type": "integer",
+          "default": null
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "slug",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-39",
+      "pattern": "/wc/v3/products/brands/(?P<id>[\\d]+)",
+      "displayPath": "products/brands/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-40",
+      "pattern": "/wc/v3/products/categories",
+      "displayPath": "products/categories",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "hide_empty",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "asc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "id",
+            "include",
+            "name",
+            "slug",
+            "term_group",
+            "description",
+            "count"
+          ],
+          "default": "name"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "parent",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "product",
+          "required": false,
+          "type": "integer",
+          "default": null
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "slug",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-41",
+      "pattern": "/wc/v3/products/categories/(?P<id>[\\d]+)",
+      "displayPath": "products/categories/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-42",
+      "pattern": "/wc/v3/products/custom-fields/names",
+      "displayPath": "products/custom-fields/names",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "asc"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-43",
+      "pattern": "/wc/v3/products/reviews",
+      "displayPath": "products/reviews",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "date",
+            "date_gmt",
+            "id",
+            "include",
+            "product"
+          ],
+          "default": "date_gmt"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "product",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "reviewer",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "reviewer_email",
+          "required": false,
+          "type": "string",
+          "default": null
+        },
+        {
+          "name": "reviewer_exclude",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "all",
+            "hold",
+            "approved",
+            "spam",
+            "trash"
+          ],
+          "default": "approved"
+        }
+      ]
+    },
+    {
+      "id": "wc3-44",
+      "pattern": "/wc/v3/products/reviews/(?P<id>[\\d]+)",
+      "displayPath": "products/reviews/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-45",
+      "pattern": "/wc/v3/products/shipping_classes",
+      "displayPath": "products/shipping_classes",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "hide_empty",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "asc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "id",
+            "include",
+            "name",
+            "slug",
+            "term_group",
+            "description",
+            "count"
+          ],
+          "default": "name"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "parent",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "product",
+          "required": false,
+          "type": "integer",
+          "default": null
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "slug",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-46",
+      "pattern": "/wc/v3/products/shipping_classes/(?P<id>[\\d]+)",
+      "displayPath": "products/shipping_classes/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-47",
+      "pattern": "/wc/v3/products/shipping_classes/slug-suggestion",
+      "displayPath": "products/shipping_classes/slug-suggestion",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "description",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "slug",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-48",
+      "pattern": "/wc/v3/products/suggested-products",
+      "displayPath": "products/suggested-products",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "attribute",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "attribute_term",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "brand",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "categories",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "category",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "dates_are_gmt",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "exclude_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "featured",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "in_stock",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "limit",
+          "required": false,
+          "type": "integer",
+          "default": 5
+        },
+        {
+          "name": "max_price",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "min_price",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "modified_after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "modified_before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "on_sale",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "date",
+            "id",
+            "include",
+            "title",
+            "slug",
+            "modified",
+            "popularity",
+            "rating",
+            "post__in",
+            "price",
+            "sales",
+            "menu_order",
+            "random",
+            "popularity",
+            "rating",
+            "menu_order"
+          ],
+          "default": "date"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "parent",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "parent_exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "shipping_class",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "sku",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "slug",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "any",
+            "future",
+            "trash",
+            "draft",
+            "pending",
+            "private",
+            "publish"
+          ],
+          "default": "any"
+        },
+        {
+          "name": "tag",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "tags",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "type",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "simple",
+            "grouped",
+            "external",
+            "variable"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wc3-49",
+      "pattern": "/wc/v3/products/tags",
+      "displayPath": "products/tags",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "hide_empty",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "asc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "id",
+            "include",
+            "name",
+            "slug",
+            "term_group",
+            "description",
+            "count"
+          ],
+          "default": "name"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "parent",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "product",
+          "required": false,
+          "type": "integer",
+          "default": null
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "slug",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-50",
+      "pattern": "/wc/v3/products/tags/(?P<id>[\\d]+)",
+      "displayPath": "products/tags/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-51",
+      "pattern": "/wc/v3/refunds",
+      "displayPath": "refunds",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "dates_are_gmt",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "dp",
+          "required": false,
+          "type": "integer",
+          "default": 2
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "exclude_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "modified_after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "modified_before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        },
+        {
+          "name": "order_item_display_meta",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "date",
+            "id",
+            "include",
+            "title",
+            "slug",
+            "modified"
+          ],
+          "default": "date"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "parent",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "parent_exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-52",
+      "pattern": "/wc/v3/reports",
+      "displayPath": "reports",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-53",
+      "pattern": "/wc/v3/reports/coupons/totals",
+      "displayPath": "reports/coupons/totals",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-54",
+      "pattern": "/wc/v3/reports/customers/totals",
+      "displayPath": "reports/customers/totals",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-55",
+      "pattern": "/wc/v3/reports/orders/totals",
+      "displayPath": "reports/orders/totals",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-56",
+      "pattern": "/wc/v3/reports/products/totals",
+      "displayPath": "reports/products/totals",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-57",
+      "pattern": "/wc/v3/reports/reviews/totals",
+      "displayPath": "reports/reviews/totals",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-58",
+      "pattern": "/wc/v3/reports/sales",
+      "displayPath": "reports/sales",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "date_max",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "date_min",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "period",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "week",
+            "month",
+            "last_month",
+            "year"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wc3-59",
+      "pattern": "/wc/v3/reports/top_sellers",
+      "displayPath": "reports/top_sellers",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "date_max",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "date_min",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "period",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "week",
+            "month",
+            "last_month",
+            "year"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wc3-60",
+      "pattern": "/wc/v3/settings",
+      "displayPath": "settings",
+      "pathParams": [],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-61",
+      "pattern": "/wc/v3/settings/(?P<group_id>[\\w-]+)",
+      "displayPath": "settings/{group_id}",
+      "pathParams": [
+        "group_id"
+      ],
+      "queryParams": [
+        {
+          "name": "group",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-62",
+      "pattern": "/wc/v3/settings/(?P<group_id>[\\w-]+)/(?P<id>[\\w-]+)",
+      "displayPath": "settings/{group_id}/{id}",
+      "pathParams": [
+        "group_id",
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "group",
+          "required": false,
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "wc3-63",
+      "pattern": "/wc/v3/shipping/zones",
+      "displayPath": "shipping/zones",
+      "pathParams": [],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-64",
+      "pattern": "/wc/v3/shipping/zones/(?P<id>[\\d]+)",
+      "displayPath": "shipping/zones/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-65",
+      "pattern": "/wc/v3/shipping/zones/(?P<id>[\\d]+)/locations",
+      "displayPath": "shipping/zones/{id}/locations",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-66",
+      "pattern": "/wc/v3/shipping/zones/(?P<zone_id>[\\d]+)/methods",
+      "displayPath": "shipping/zones/{zone_id}/methods",
+      "pathParams": [
+        "zone_id"
+      ],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-67",
+      "pattern": "/wc/v3/shipping/zones/(?P<zone_id>[\\d]+)/methods/(?P<instance_id>[\\d]+)",
+      "displayPath": "shipping/zones/{zone_id}/methods/{instance_id}",
+      "pathParams": [
+        "zone_id",
+        "instance_id"
+      ],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-68",
+      "pattern": "/wc/v3/shipping_methods",
+      "displayPath": "shipping_methods",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-69",
+      "pattern": "/wc/v3/shipping_methods/(?P<id>[\\w-]+)",
+      "displayPath": "shipping_methods/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-70",
+      "pattern": "/wc/v3/system_status",
+      "displayPath": "system_status",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-71",
+      "pattern": "/wc/v3/system_status/tools",
+      "displayPath": "system_status/tools",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-72",
+      "pattern": "/wc/v3/system_status/tools/(?P<id>[\\w-]+)",
+      "displayPath": "system_status/tools/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-73",
+      "pattern": "/wc/v3/taxes",
+      "displayPath": "taxes",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "class",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "standard",
+            "%d7%a9%d7%99%d7%a2%d7%95%d7%a8-%d7%90%d7%a4%d7%a1",
+            "%d7%a9%d7%99%d7%a2%d7%95%d7%a8-%d7%9e%d7%95%d7%a4%d7%97%d7%aa",
+            "%d7%aa%d7%a2%d7%a8%d7%99%d7%a3-%d7%90%d7%a4%d7%a1%d7%99",
+            "%d7%aa%d7%a2%d7%a8%d7%99%d7%a3-%d7%9e%d7%95%d7%96%d7%9c"
+          ]
+        },
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "asc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "id",
+            "order",
+            "priority"
+          ],
+          "default": "order"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        }
+      ]
+    },
+    {
+      "id": "wc3-74",
+      "pattern": "/wc/v3/taxes/(?P<id>[\\d]+)",
+      "displayPath": "taxes/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-75",
+      "pattern": "/wc/v3/taxes/classes",
+      "displayPath": "taxes/classes",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    },
+    {
+      "id": "wc3-76",
+      "pattern": "/wc/v3/taxes/classes/(?P<slug>\\w[\\w\\s\\-]*)",
+      "displayPath": "taxes/classes/{slug}",
+      "pathParams": [
+        "slug"
+      ],
+      "queryParams": []
+    },
+    {
+      "id": "wc3-77",
+      "pattern": "/wc/v3/variations",
+      "displayPath": "variations",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "attributes",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "dates_are_gmt",
+          "required": false,
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "downloadable",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "exclude_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "exclude_status",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "has_price",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include_meta",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include_status",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "name": "max_price",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "min_price",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "modified_after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "modified_before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "on_sale",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "date",
+            "id",
+            "include",
+            "title",
+            "slug",
+            "modified",
+            "menu_order"
+          ],
+          "default": "date"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "parent",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "parent_exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "pos_products_only",
+          "required": false,
+          "type": "boolean"
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "sku",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "slug",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "any",
+            "future",
+            "trash",
+            "draft",
+            "pending",
+            "private",
+            "publish"
+          ],
+          "default": "any"
+        },
+        {
+          "name": "stock_status",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "instock",
+            "outofstock",
+            "onbackorder"
+          ]
+        },
+        {
+          "name": "virtual",
+          "required": false,
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "id": "wc3-78",
+      "pattern": "/wc/v3/webhooks",
+      "displayPath": "webhooks",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "after",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "before",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        },
+        {
+          "name": "exclude",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "include",
+          "required": false,
+          "type": "array",
+          "default": []
+        },
+        {
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        },
+        {
+          "name": "orderby",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "date",
+            "id",
+            "title"
+          ],
+          "default": "date"
+        },
+        {
+          "name": "page",
+          "required": false,
+          "type": "integer",
+          "default": 1
+        },
+        {
+          "name": "per_page",
+          "required": false,
+          "type": "integer",
+          "default": 10
+        },
+        {
+          "name": "search",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "all",
+            "active",
+            "paused",
+            "disabled"
+          ],
+          "default": "all"
+        }
+      ]
+    },
+    {
+      "id": "wc3-79",
+      "pattern": "/wc/v3/webhooks/(?P<id>[\\d]+)",
+      "displayPath": "webhooks/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "context",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "view",
+            "edit"
+          ],
+          "default": "view"
+        }
+      ]
+    }
+  ]
+}

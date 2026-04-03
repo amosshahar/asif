@@ -7,7 +7,15 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "wc:test": "ts-node scripts/wc-connection-test.ts",
-    "admin:add": "ts-node scripts/add-asif-admin.ts"
+    "comax:test": "ts-node scripts/comax-connection-test.ts",
+    "comax:curl": "node scripts/comax-curl-customers.cjs",
+    "comax:curl:customer": "node scripts/comax-curl-customer-details.cjs",
+    "comax:curl:club": "node scripts/comax-curl-club-customers.cjs",
+    "comax:curl:orders": "node scripts/comax-curl-orders.cjs",
+    "comax:curl:items": "node scripts/comax-curl-items.cjs",
+    "comax:curl:all": "node scripts/comax-curl-all-lists.cjs",
+    "admin:add": "ts-node scripts/add-asif-admin.ts",
+    "generate:wc-read-routes": "node scripts/generate-wc-v3-read-routes.mjs"
   },
   "keywords": [],
   "author": "",

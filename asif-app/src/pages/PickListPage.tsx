@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { isAxiosError } from 'axios'
 import { CapacitorException, ExceptionCode } from '@capacitor/core'
 import type { Order, OrderItem } from '../api'
@@ -59,14 +59,52 @@ interface Props {
 
 type GroupedItems = { label: string; items: OrderItem[] }[]
 
-function groupByAisle(items: OrderItem[]): GroupedItems {
-  const map = new Map<number, { label: string; items: OrderItem[] }>()
-  for (const item of items) {
-    const { aisle, label } = item.location
-    if (!map.has(aisle)) map.set(aisle, { label, items: [] })
-    map.get(aisle)!.items.push(item)
+/** מיון ליקוט: מעבר (מספרי) → אזור לפי תווית כשאין מעבר → בתוך הקבוצה: ממתין לפני נאסף/חסר → שם. */
+function statusRank(s: OrderItem['status']): number {
+  if (s === 'pending') return 0
+  if (s === 'collected') return 1
+  return 2
+}
+
+function pickSortKey(item: OrderItem): [number, string, string] {
+  const aisle = item.location.aisle
+  const label = (item.location.label || '').trim()
+  const labelKey = label === '—' ? '' : label
+  const aisleBucket = aisle > 0 ? aisle : 100_000
+  const secondary = aisle > 0 ? '' : labelKey || '\u0000'
+  return [aisleBucket, secondary, item.name]
+}
+
+function sortItemsForPicking(items: OrderItem[]): OrderItem[] {
+  return [...items].sort((a, b) => {
+    const [a1, a2, a3] = pickSortKey(a)
+    const [b1, b2, b3] = pickSortKey(b)
+    if (a1 !== b1) return a1 - b1
+    if (a2 !== b2) return a2.localeCompare(b2, 'he')
+    const sr = statusRank(a.status) - statusRank(b.status)
+    if (sr !== 0) return sr
+    return a3.localeCompare(b3, 'he')
+  })
+}
+
+/** כותרת קבוצה לתצוגה — עקבית עם סדר המיון. */
+function groupHeading(item: OrderItem): string {
+  const { aisle, label } = item.location
+  const t = label.trim()
+  if (aisle > 0) return `מעבר ${aisle}`
+  if (t && t !== '—') return t
+  return 'ללא מיקום מפורט'
+}
+
+function groupSortedItems(sorted: OrderItem[]): GroupedItems {
+  const out: GroupedItems = []
+  for (const item of sorted) {
+    const h = groupHeading(item)
+    const last = out[out.length - 1]
+    if (!last || last.label !== h) out.push({ label: h, items: [item] })
+    else last.items.push(item)
   }
-  return Array.from(map.values())
+  return out
 }
 
 export default function PickListPage({ order, onOrderComplete, onOrderUpdated, onBack }: Props) {
@@ -93,7 +131,7 @@ export default function PickListPage({ order, onOrderComplete, onOrderUpdated, o
   const hasMissingLine = items.some(i => i.status === 'missing')
   const handoffNote = (order.csHandoffReason ?? '').trim()
 
-  const groups = groupByAisle(items)
+  const groups = useMemo(() => groupSortedItems(sortItemsForPicking(items)), [items])
 
   function expectedCode(item: OrderItem): string {
     return (item.barcode || item.sku || '').trim()
@@ -235,6 +273,10 @@ export default function PickListPage({ order, onOrderComplete, onOrderUpdated, o
         <div className={s.progressFill} style={{ width: `${(collected / total) * 100}%` }} />
       </div>
 
+      <p className={s.sortHint}>
+        הרשימה מסודרת לפי מעבר ומיקום (ואז פריטים פתוחים ראשונים) לנוחות הליכה בחנות.
+      </p>
+
       {(order.customerNote ?? '').trim() ? (
         <div className={s.orderNoteBanner} role="status">
           <span className={s.orderNoteLabel}>הערת לקוח</span>
@@ -273,8 +315,8 @@ export default function PickListPage({ order, onOrderComplete, onOrderUpdated, o
       </div>
 
       <div className={s.list}>
-        {groups.map(group => (
-          <div key={group.label}>
+        {groups.map((group, gi) => (
+          <div key={`${group.label}-${gi}`}>
             <div className={s.aisleHeader}>{group.label}</div>
             {group.items.map(item => (
               <ItemCard
@@ -369,7 +411,11 @@ function ItemCard({ item, scanning, onScan, onWeight, onCollect, onMissing, onUn
   const isDone      = item.status !== 'pending'
   const isMissing   = item.status === 'missing'
   const isCollected = item.status === 'collected'
-  const hasLocation = item.location.label.trim() !== '' && item.location.label !== '—'
+  const locLabel = item.location.label.trim()
+  const hasLocationText = locLabel !== '' && locLabel !== '—'
+  const scanCode = (item.barcode || item.sku || '').trim()
+  const barcodeOnly = (item.barcode || '').trim()
+  const skuOnly = (item.sku || '').trim()
 
   return (
     <div className={`${s.card} ${isDone ? (isMissing ? s.cardMissing : s.cardCollected) : ''}`}>
@@ -389,12 +435,28 @@ function ItemCard({ item, scanning, onScan, onWeight, onCollect, onMissing, onUn
           <div className={s.itemInfo}>
             <span className={s.itemName}>{item.name}</span>
             {item.brand && <span className={s.itemBrand}>{item.brand}</span>}
-            {hasLocation ? (
-              <div className={s.locationRow}>
-                <span className={s.locationIcon} aria-hidden>📍</span>
-                <span>{item.location.label}</span>
+            <div className={s.metaBlock}>
+              <div className={s.metaRow}>
+                <span className={s.metaLabel}>מיקום בחנות</span>
+                <span className={`${s.metaValue} ${hasLocationText || item.location.aisle > 0 ? s.metaValueOk : s.metaValueMuted}`} dir="auto">
+                  {hasLocationText
+                    ? locLabel
+                    : item.location.aisle > 0
+                      ? `מעבר ${item.location.aisle}`
+                      : 'לא זמין'}
+                </span>
               </div>
-            ) : null}
+              <div className={s.metaRow}>
+                <span className={s.metaLabel}>ברקוד לסריקה</span>
+                <span className={`${s.metaValue} ${scanCode ? s.metaValueMono : s.metaValueMuted}`} dir="ltr">
+                  {scanCode
+                    ? barcodeOnly && skuOnly && barcodeOnly !== skuOnly
+                      ? `${barcodeOnly} (מק״ט: ${skuOnly})`
+                      : scanCode
+                    : 'אין — אסוף ידנית או הוסיפו ברקוד/מק״ט בחנות'}
+                </span>
+              </div>
+            </div>
             <div className={s.badges}>
               <span className={s.qty}>{orderedQtyLabel(item)}</span>
               {isWeighed && <span className={s.weighBadge}>שקול</span>}

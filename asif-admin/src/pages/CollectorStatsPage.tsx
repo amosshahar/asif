@@ -67,7 +67,7 @@ export default function CollectorStatsPage() {
     <div className={s.page}>
       <div className={s.header}>
         <div>
-          <h1 className={s.title}>מדידות זמן ליקוט</h1>
+          <h1 className={s.title}>סטטיסטיקות</h1>
           <p className={s.subtitle}>
             זמן ליקוט להזמנה: מהתחלת ליקוט (לחיצה על התחלה) ועד סגירת ההזמנה. זמן בין פריטים: ממוצע
             הפערים בין סימון שורה כנאסף/חסר לשורה הבאה (נשמר אוטומטית בשרת). הזמנות ישנות לפני העדכון

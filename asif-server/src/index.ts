@@ -22,6 +22,7 @@ import ordersRouter from './routes/orders'
 import shiftsRouter from './routes/shifts'
 import dashboardRouter from './routes/dashboard'
 import woocommerceRouter from './routes/woocommerce'
+import comaxLabRouter from './routes/comaxLab'
 
 requireFirestoreOrExit()
 
@@ -50,7 +51,8 @@ app.use((req, _res, next) => {
     p.startsWith('/dashboard') ||
     p === '/health' ||
     p === '/debug/ping' ||
-    p === '/'
+    p === '/' ||
+    p.startsWith('/admin/comax')
   ) {
     console.info('[asif-http]', req.method, req.originalUrl)
   }
@@ -82,6 +84,7 @@ app.use('/shifts', shiftsRouter)
 
 // More specific path first — otherwise `/admin` would swallow `/admin/woocommerce/*`.
 app.use('/admin/woocommerce', requireFirebaseAdmin, woocommerceRouter)
+app.use('/admin/comax', requireFirebaseAdmin, comaxLabRouter)
 app.use('/admin', requireFirebaseAdmin, adminRouter)
 app.use('/dashboard', requireFirebaseAdmin, dashboardRouter)
 

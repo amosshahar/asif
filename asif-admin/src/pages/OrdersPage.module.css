@@ -245,19 +245,43 @@
   color: var(--color-text-secondary);
   background: #fafafa;
   white-space: nowrap;
+  vertical-align: middle;
+}
+
+.thSortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  margin: 0;
+  padding: 2px 0;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  text-align: right;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.thSortBtn:hover {
+  color: var(--color-primary);
+  background: rgba(0, 102, 51, 0.06);
+}
+
+.thSortBtn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.thActions {
+  width: 1%;
 }
 
 .table tr:last-child td {
   border-bottom: none;
-}
-
-.noteCell {
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 12px;
-  color: #4b5563;
 }
 
 .statusBadge {

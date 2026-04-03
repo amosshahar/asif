@@ -178,7 +178,8 @@ export default function HomePage({ user, onLogout, onStartOrder }: Props) {
       return
     }
     if (p.next === 'done') {
-      setHomeTab('stats')
+      // Stay on «הזמנות» so «התחל משמרת» is visible (it only lived there; stats tab had no CTA).
+      setHomeTab('orders')
       void loadOrder({ isRefresh: true })
       void loadShiftStats()
     }
@@ -357,6 +358,20 @@ export default function HomePage({ user, onLogout, onStartOrder }: Props) {
         {homeTab === 'stats' && (
           <div className={s.statsPanel}>
             {statsError ? <p className={s.sub}>{statsError}</p> : null}
+
+            {!loading && (!shift || !shift.open) && (
+              <div className={s.statsStartShiftBar}>
+                <p className={s.statsStartShiftLabel}>אין משמרת פעילה — אפשר להתחיל משמרת חדשה</p>
+                <button
+                  type="button"
+                  className={s.startShiftBtn}
+                  disabled={shiftBusy || !!pendingEndShift}
+                  onClick={() => void handleStartShift()}
+                >
+                  {shiftBusy ? 'פותח…' : 'התחל משמרת'}
+                </button>
+              </div>
+            )}
 
             {statsPayload?.shiftOpen && (
               <p className={`${s.statsBanner} ${s.statsBannerProvisional}`} role="status">

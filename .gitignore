@@ -12,6 +12,8 @@ asif-app/android/
 # Environment (never commit secrets — use *.example templates)
 .env
 **/.env
+deploy/.env
+asif-server/.env
 .env.local
 .env.*.local
 

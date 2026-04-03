@@ -31,7 +31,7 @@ export default function EndShiftSummaryModal({ summary, afterClose, onConfirm }:
         </h2>
         <p className={s.lead}>
           {afterClose === 'done'
-            ? 'לאחר האישור תועברו ללשונית «סטטיסטיקת משמרת» עם אותם נתונים (סופיים).'
+            ? 'לאחר האישור תחזרו ללשונית «הזמנות» — שם אפשר להתחיל משמרת חדשה. הסיכום הסופי זמין גם ב«סטטיסטיקת משמרת».'
             : 'הנתונים למשמרת שסיימת (לפי שעון המערכת):'}
         </p>
         <ul className={s.list}>

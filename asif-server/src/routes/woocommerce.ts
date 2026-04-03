@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { loadWooCommerceConfig, publicStoreOrigin } from '../integrations/woocommerce/config'
 import { getWcOrderById, listOrders, WooCommerceHttpError } from '../integrations/woocommerce/client'
+import wcLabRouter from './wcLab'
 import { mapWcOrderToOrder } from '../integrations/woocommerce/mapWcOrder'
 import {
   getWooCommerceFullSyncLastError,
@@ -10,6 +11,8 @@ import {
 import { ASIF_ORDERS_COLLECTION, ASIF_USERS_COLLECTION } from '../firestoreCollections'
 
 const router = Router()
+
+router.use(wcLabRouter)
 
 let lastWcError: string | null = null
 

@@ -104,9 +104,13 @@ export interface Order {
   syncedAt?: string
   items: Array<{ sku: string; name: string; quantity: number; status: string }>
   distributionArea?: string | null
+  shippingCity?: string | null
+  shippingStreet?: string | null
   deliveryDate?: string | null
   deliveryTimeFrom?: string | null
   deliveryTimeTo?: string | null
+  /** WC `date_created` — when the order was submitted. */
+  wcDateCreated?: string | null
   csHandoffReason?: string | null
   customerNote?: string | null
 }
@@ -164,6 +168,72 @@ export interface WooSyncResult {
 export const syncWooCommerceOrders = () =>
   api.post<WooSyncResult>('/admin/woocommerce/sync').then((r) => r.data)
 
+export interface WcLabPreset {
+  id: string
+  path: string
+  labelHe: string
+}
+
+export interface WcLabCatalogResponse {
+  configured: boolean
+  error?: string
+  storeOrigin?: string
+  presets?: WcLabPreset[]
+  docs?: string
+  wpIndexHint?: string
+}
+
+export interface WcV3ReadRouteQueryParam {
+  name: string
+  required: boolean
+  type: string
+  enum?: string[]
+  default?: unknown
+}
+
+export interface WcV3ReadRouteEntry {
+  id: string
+  pattern: string
+  displayPath: string
+  pathParams: string[]
+  queryParams: WcV3ReadRouteQueryParam[]
+}
+
+export interface WcLabReadRoutesResponse {
+  configured: boolean
+  error?: string
+  generatedFrom?: string
+  generatedAt?: string
+  routeCount?: number
+  routes?: WcV3ReadRouteEntry[]
+}
+
+export interface WcLabFetchResponse {
+  configured: boolean
+  error?: string
+  wc?: {
+    httpStatus: number
+    contentType: string | null
+    endpoint: string
+    bodyText: string
+    truncated: boolean
+  }
+  lab?: { note: string }
+}
+
+export const getWcLabCatalog = () =>
+  api.get<WcLabCatalogResponse>('/admin/woocommerce/lab/catalog').then((r) => r.data)
+
+export const getWcLabReadRoutes = () =>
+  api.get<WcLabReadRoutesResponse>('/admin/woocommerce/lab/read-routes').then((r) => r.data)
+
+export const getWcLabFetch = (path: string, query?: Record<string, string>) =>
+  api
+    .get<WcLabFetchResponse>('/admin/woocommerce/lab/fetch', {
+      params: { path, ...query },
+    })
+    .then((r) => r.data)
+
 export interface DashboardOrderEntry {
   id: string
   status: 'queued' | 'assigned' | 'in_progress' | 'waiting_cs' | 'completed'
@@ -213,3 +283,53 @@ export const getCollectorStats = (collectorId: string, opts?: { days?: number })
     .get<CollectorStatsPayload>(`/admin/collectors/${encodeURIComponent(collectorId)}/stats${d}`)
     .then((r) => r.data)
 }
+
+/** Temporary Comax WS tester (Firebase admin only). */
+export interface ComaxLabBlock {
+  title: string
+  url: string
+  ok: boolean
+  status: number
+  note: string
+}
+
+/** Verbatim Comax HTTP response (see `block` for ASIF hints only). */
+export interface ComaxUpstream {
+  httpStatus: number
+  body: string
+  endpoint: string
+  method: 'GET' | 'POST'
+  truncated: boolean
+}
+
+export type ComaxLabRunResponse =
+  | { configured: true; comax: ComaxUpstream; block: ComaxLabBlock }
+  | { configured: false; error: string }
+
+export interface ComaxAuthPayload {
+  loginId?: string
+  loginPassword?: string
+  /** Comax ארגון — server builds LoginID as org\\user when set (unless loginId already contains \\ or /). */
+  organization?: string
+}
+
+export const postComaxCustomersSearch = (
+  payload: ComaxAuthPayload & {
+    mobile?: string
+    email?: string
+    phone?: string
+    id?: string
+    name?: string
+    city?: string
+    groupId?: string
+  },
+) => api.post<ComaxLabRunResponse>('/admin/comax/customers/search', payload).then((r) => r.data)
+
+export const postComaxCustomerById = (payload: ComaxAuthPayload & { customerId: string }) =>
+  api.post<ComaxLabRunResponse>('/admin/comax/customers/by-id', payload).then((r) => r.data)
+
+export const postComaxOrders = (payload: ComaxAuthPayload & { fromDate: string; toDate: string }) =>
+  api.post<ComaxLabRunResponse>('/admin/comax/orders', payload).then((r) => r.data)
+
+export const postComaxItems = (payload: ComaxAuthPayload & { storeId: string }) =>
+  api.post<ComaxLabRunResponse>('/admin/comax/items', payload).then((r) => r.data)

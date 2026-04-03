@@ -117,9 +117,12 @@ export interface Order {
   wcStatus?: string
   syncedAt?: string
   distributionArea?: string | null
+  shippingCity?: string | null
+  shippingStreet?: string | null
   deliveryDate?: string | null
   deliveryTimeFrom?: string | null
   deliveryTimeTo?: string | null
+  wcDateCreated?: string | null
   /** הערת מלקט — העברה לשירות לקוחות גם בלי פריט חסר. */
   csHandoffReason?: string | null
   /** הערת לקוח על ההזמנה (מ־WooCommerce). */
